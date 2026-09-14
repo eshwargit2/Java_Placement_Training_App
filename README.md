@@ -1,6 +1,19 @@
 # Student Placement Assessment Portal (Express.js + MongoDB)
 
-A full-stack web application for 41-day Java placement training, question management, student progress tracking, live assessments, automated code evaluation, and performance analytics.
+A full-stack web application designed for a 41-day structured Java placement training program, student progress tracking, live assessments, automated code evaluation, and administrative analytics.
+
+---
+
+## 🎯 Purpose of the Application
+
+The **Student Placement Assessment Portal** is designed to streamline and accelerate campus placement preparation and technical training for students aiming for software engineering roles:
+
+1. **Structured 41-Day Java Roadmap**: Provides a day-by-day curriculum covering fundamental to advanced Core Java topics, object-oriented programming, error correction, and algorithmic problem-solving.
+2. **Daily Assessments & Instant Feedback**: Evaluates students daily through automated MCQ, code correction, and programming challenges to reinforce conceptual clarity and hands-on coding skills.
+3. **Student Progress Tracking**: Automatically unlocks training days and records historical submissions, allowing learners to track their preparation journey step-by-step.
+4. **Trainer & Placement Analytics**: Empowers college placement cells, instructors, and administrators to monitor 200+ batch students in real time, analyze class performance metrics, track completion rates, and export performance reports for placement readiness.
+
+---
 
 ## Tech Stack
 - **Backend**: Node.js, Express.js, Mongoose, Multer, XLSX
