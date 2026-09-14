@@ -52,7 +52,8 @@ function setLoginMode(mode) {
     }
     if (loginBtnText) loginBtnText.textContent = 'Continue to Admin Console';
     if (authFooter) {
-      authFooter.innerHTML = '<p><strong>@Admin / Admin@555</strong> — Admin console access</p>';
+      authFooter.style.display = 'none';
+      authFooter.innerHTML = '';
     }
   } else {
     if (badge) badge.textContent = 'Student Access';
@@ -70,6 +71,7 @@ function setLoginMode(mode) {
     }
     if (loginBtnText) loginBtnText.textContent = 'Continue to Student Workspace';
     if (authFooter) {
+      authFooter.style.display = '';
       authFooter.innerHTML = '<p><strong>student1 to student200</strong> / password: <strong>1234</strong> — Student accounts</p>';
     }
   }
