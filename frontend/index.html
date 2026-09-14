@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Placement Portal — Sign In</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="auth-body">
+
+  <div class="auth-container">
+    <aside class="auth-brand-panel">
+      <div>
+        <div class="auth-brand-mark">
+          <div class="java-mark">JP</div>
+          <div>
+            <div style="font-family: var(--font-display); font-weight: 700; font-size: 15px;">Java Placement</div>
+            <div style="font-size: 12px; opacity: 0.55; margin-top: 2px;">Assessment Platform</div>
+          </div>
+        </div>
+        <h1>Train. Code. Get Placed.</h1>
+        <p class="brand-lead">A focused Java assessment workspace for 41-day placement training — MCQs, debugging, and live coding.</p>
+        <ul class="auth-feature-list">
+          <li><span class="feat-dot"></span> Day-wise Java curriculum with automated evaluation</li>
+          <li><span class="feat-dot"></span> Timed assessments with coding editors</li>
+          <li><span class="feat-dot"></span> Instant scores and detailed answer sheets</li>
+        </ul>
+      </div>
+      <p style="font-size: 12px; opacity: 0.45; margin-top: 32px; font-family: var(--font-mono);">v1.0 · Java Placement Suite</p>
+    </aside>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="portal-badge" id="portalBadge">Student Access</span>
+        <h1 id="authTitle">Student Sign In</h1>
+        <p id="authSubtitle">Enter your student credentials to open the workspace</p>
+      </div>
+
+      <div class="login-mode-switch" role="tablist" aria-label="Login mode">
+        <button type="button" class="mode-btn active" id="modeStudentBtn" role="tab" aria-selected="true" onclick="setLoginMode('student')">
+          Student
+        </button>
+        <button type="button" class="mode-btn" id="modeAdminBtn" role="tab" aria-selected="false" onclick="setLoginMode('admin')">
+          Admin
+        </button>
+      </div>
+
+      <form id="loginForm" onsubmit="event.preventDefault(); login();">
+        <input type="hidden" id="loginMode" value="student">
+
+        <div class="form-field">
+          <label for="username" id="usernameLabel">Student Username</label>
+          <input id="username" type="text" placeholder="Enter student username" autocomplete="username" required>
+        </div>
+
+        <div class="form-field">
+          <label for="password" id="passwordLabel">Student Password</label>
+          <input id="password" type="password" placeholder="Enter student password" autocomplete="current-password" required>
+        </div>
+
+        <div id="loginAlert" class="alert-box" style="display:none;"></div>
+
+        <button type="submit" id="loginBtn" class="btn-primary">
+          <span id="loginBtnText">Continue to Student Workspace</span>
+        </button>
+      </form>
+
+      <div class="auth-footer" id="authFooter">
+        <p><strong>student1 to student200</strong> / password: <strong>1234</strong> — Student accounts</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

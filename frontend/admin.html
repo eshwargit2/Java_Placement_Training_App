@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Console — Java Placement Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">JP</div>
+        <div>
+          <div class="brand-title">Admin Console</div>
+          <div class="brand-subtitle">Java Placement Assessment Platform</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" class="btn-secondary" onclick="window.location.href='students.html'">Students</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">Reports</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- STATS ROW -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">Q</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Questions</span>
+          <h2 id="statQuestions" class="stat-value">--</h2>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-purple">D</div>
+        <div class="stat-info">
+          <span class="stat-label">Assessment Days</span>
+          <h2 id="statDays" class="stat-value">--</h2>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">S</div>
+        <div class="stat-info">
+          <span class="stat-label">Registered Students</span>
+          <h2 id="statStudents" class="stat-value">--</h2>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-orange">T</div>
+        <div class="stat-info">
+          <span class="stat-label">Tests Completed</span>
+          <h2 id="statSubmissions" class="stat-value">--</h2>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+    <section class="card quick-actions-card">
+      <div class="section-heading">
+        <h2>Quick Management</h2>
+        <p>Manage students, curriculum, and assessment data</p>
+      </div>
+      <div class="action-buttons-grid">
+        <button type="button" class="action-btn" onclick="window.location.href='students.html'">
+          <span class="action-icon">ST</span>
+          <span class="action-text">
+            <strong>Add / Manage Students</strong>
+            <small>Create student accounts and assign assessment days</small>
+          </span>
+        </button>
+
+        <button type="button" class="action-btn" onclick="window.location.href='reports.html'">
+          <span class="action-icon">RP</span>
+          <span class="action-text">
+            <strong>View Performance Reports</strong>
+            <small>Analyze scores, pass rates, and answer sheets</small>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- EXCEL IMPORT CARD -->
+    <section class="card import-card">
+      <div class="section-heading">
+        <h2>Import Question Bank</h2>
+        <p>Upload a 41-day Excel workbook to sync questions into MongoDB</p>
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="handleFileSelected(this)">
+        <div class="upload-content" onclick="document.getElementById('excelFile').click()">
+          <div class="upload-icon">XLS</div>
+          <h3>Choose Excel File</h3>
+          <p id="selectedFileName">Supports .xlsx and .xls (e.g. Java_Placement_41_Day.xlsx)</p>
+        </div>
+      </div>
+
+      <div class="upload-actions">
+        <button type="button" id="importBtn" class="btn-primary" onclick="uploadQuestionBank()">
+          Import Questions to MongoDB
+        </button>
+        <div id="importStatus" class="status-msg"></div>
+      </div>
+    </section>
+
+    <!-- DAYS QUESTION BANK LIST -->
+    <section class="card days-section">
+      <div class="section-heading-row">
+        <div>
+          <h2>41-Day Java Curriculum</h2>
+          <p>Inspect MCQs, error-correction, and coding criteria by day</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" class="btn-secondary btn-sm" onclick="loadDashboardData()">Refresh</button>
+          <button type="button" class="btn-danger btn-sm" onclick="handleDeleteAllQuestions()">Delete All Questions</button>
+        </div>
+      </div>
+
+      <div id="daysLoading" class="loading-state">Loading question bank from MongoDB...</div>
+      <div id="dayList" class="day-cards-grid" style="display:none;"></div>
+    </section>
+  </main>
+
+  <!-- QUESTION VIEW MODAL -->
+  <div id="questionModal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">Day Questions</h2>
+          <p id="modalSubtitle">Stored in MongoDB</p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeQuestionModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalQuestions">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button type="button" id="modalDeleteDayBtn" class="btn-danger btn-sm" onclick="">Delete This Day</button>
+        <button type="button" class="btn-secondary" onclick="closeQuestionModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    let currentDaysData = [];
+
+    async function loadDashboardData() {
+      try {
+        // Load stats
+        const statsRes = await API.getStats();
+        if (statsRes.success && statsRes.stats) {
+          document.getElementById('statQuestions').innerText = statsRes.stats.totalQuestions || 0;
+          document.getElementById('statDays').innerText = statsRes.stats.totalDays || 0;
+          document.getElementById('statStudents').innerText = statsRes.stats.totalStudents || 0;
+          document.getElementById('statSubmissions').innerText = statsRes.stats.totalSubmissions || 0;
+        }
+
+        // Load question days
+        const daysRes = await API.getQuestionDays();
+        const loadingEl = document.getElementById('daysLoading');
+        const listEl = document.getElementById('dayList');
+
+        loadingEl.style.display = 'none';
+        listEl.style.display = 'grid';
+        listEl.innerHTML = '';
+
+        if (daysRes.success && daysRes.days && daysRes.days.length > 0) {
+          currentDaysData = daysRes.days;
+          daysRes.days.forEach(dayInfo => {
+            const card = document.createElement('div');
+            card.className = 'day-card';
+            card.innerHTML = `
+              <div class="day-card-header">
+                <span class="day-badge">Day ${dayInfo.day}</span>
+                <span class="question-count">${dayInfo.count} Questions</span>
+              </div>
+              <h3 class="day-topic">${escapeHTML(dayInfo.topic)}</h3>
+              <div class="day-breakdown">
+                <span>MCQ: <b>${dayInfo.mcqCount || 0}</b></span>
+                <span>Error: <b>${dayInfo.errorCount || 0}</b></span>
+                <span>Coding: <b>${dayInfo.codingCount || 0}</b></span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-day-view" onclick="viewDayQuestions(${dayInfo.day})">
+                  Inspect Questions
+                </button>
+                <button type="button" class="btn-delete" title="Delete Day ${dayInfo.day}" onclick="handleDeleteDayQuestions(${dayInfo.day})">
+                  Del
+                </button>
+              </div>
+            `;
+            listEl.appendChild(card);
+          });
+        } else {
+          listEl.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+              <p>No questions currently found in MongoDB.</p>
+              <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Use the Excel upload above to import questions.</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+      }
+    }
+
+    function handleFileSelected(input) {
+      if (input.files && input.files[0]) {
+        document.getElementById('selectedFileName').innerHTML = `Selected: <b>${escapeHTML(input.files[0].name)}</b> (${Math.round(input.files[0].size/1024)} KB)`;
+      }
+    }
+
+    async function uploadQuestionBank() {
+      const fileInput = document.getElementById('excelFile');
+      const statusEl = document.getElementById('importStatus');
+      const importBtn = document.getElementById('importBtn');
+
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please select an Excel (.xlsx) file to upload.');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+
+      importBtn.disabled = true;
+      importBtn.innerText = 'Importing to MongoDB...';
+      statusEl.className = 'status-msg info';
+      statusEl.innerText = 'Reading Excel and storing questions into MongoDB...';
+
+      try {
+        const res = await API.importQuestions(formData, false);
+        if (res.success) {
+          statusEl.className = 'status-msg success';
+          statusEl.innerText = res.message;
+          alert(res.message);
+          loadDashboardData();
+        } else {
+          statusEl.className = 'status-msg error';
+          statusEl.innerText = res.message || 'Import failed.';
+        }
+      } catch (err) {
+        console.error('Import error:', err);
+        statusEl.className = 'status-msg error';
+        statusEl.innerText = 'Error connecting to server during import.';
+      } finally {
+        importBtn.disabled = false;
+        importBtn.innerText = 'Import Questions to MongoDB';
+      }
+    }
+
+    async function handleDeleteAllQuestions() {
+      const confirmed = confirm(
+        '⚠️ ARE YOU SURE YOU WANT TO DELETE ALL QUESTIONS FROM MONGODB?\n\nThis will remove all questions across all 41 days.'
+      );
+      if (!confirmed) return;
+
+      const secondCheck = prompt('Type "DELETE" to confirm permanent deletion of all questions:');
+      if (secondCheck !== 'DELETE') {
+        alert('Deletion cancelled. You did not type DELETE.');
+        return;
+      }
+
+      try {
+        const res = await API.deleteAllQuestions();
+        if (res.success) {
+          alert(res.message || 'All questions have been deleted from MongoDB.');
+          loadDashboardData();
+        } else {
+          alert('Failed to delete questions: ' + (res.message || 'Unknown error'));
+        }
+      } catch (err) {
+        console.error('Delete error:', err);
+        alert('Error connecting to backend server.');
+      }
+    }
+
+    async function handleDeleteDayQuestions(day) {
+      const confirmed = confirm(`Are you sure you want to delete all questions for Day ${day} from MongoDB?`);
+      if (!confirmed) return;
+
+      try {
+        const res = await API.deleteAllQuestions(day);
+        if (res.success) {
+          alert(res.message || `Day ${day} questions deleted.`);
+          closeQuestionModal();
+          loadDashboardData();
+        } else {
+          alert('Failed to delete day questions: ' + res.message);
+        }
+      } catch (err) {
+        alert('Error connecting to backend server.');
+      }
+    }
+
+    async function viewDayQuestions(day) {
+      const modal = document.getElementById('questionModal');
+      const title = document.getElementById('modalTitle');
+      const container = document.getElementById('modalQuestions');
+      const deleteDayBtn = document.getElementById('modalDeleteDayBtn');
+
+      title.innerText = `Day ${day} Questions (MongoDB)`;
+      deleteDayBtn.onclick = () => handleDeleteDayQuestions(day);
+      container.innerHTML = '<div class="loading-state">Loading questions from MongoDB...</div>';
+      modal.style.display = 'flex';
+
+      try {
+        const res = await API.getQuestions(day);
+        container.innerHTML = '';
+
+        if (res.success && res.questions && res.questions.length > 0) {
+          res.questions.forEach((q, idx) => {
+            const item = document.createElement('div');
+            item.className = 'question-inspect-item';
+            const type = q.questionType || 'MCQ';
+
+            let optionsHtml = '';
+            if (q.optionA || q.optionB || q.optionC || q.optionD) {
+              optionsHtml = `
+                <div class="options-grid">
+                  <div class="opt-box ${q.correctAnswer === 'A' || q.correctAnswer === q.optionA ? 'opt-correct' : ''}"><b>A:</b> ${escapeHTML(q.optionA)}</div>
+                  <div class="opt-box ${q.correctAnswer === 'B' || q.correctAnswer === q.optionB ? 'opt-correct' : ''}"><b>B:</b> ${escapeHTML(q.optionB)}</div>
+                  <div class="opt-box ${q.correctAnswer === 'C' || q.correctAnswer === q.optionC ? 'opt-correct' : ''}"><b>C:</b> ${escapeHTML(q.optionC)}</div>
+                  <div class="opt-box ${q.correctAnswer === 'D' || q.correctAnswer === q.optionD ? 'opt-correct' : ''}"><b>D:</b> ${escapeHTML(q.optionD)}</div>
+                </div>
+              `;
+            }
+
+            let codingDetails = '';
+            if (type === 'CODING') {
+              codingDetails = `
+                <div class="coding-details-box">
+                  ${q.codingRequirement ? `<p><b>Requirement:</b> ${escapeHTML(q.codingRequirement)}</p>` : ''}
+                  ${q.codingEvaluation ? `<p><b>Full Mark Criteria:</b> ${escapeHTML(q.codingEvaluation)}</p>` : ''}
+                  ${q.sampleInput ? `<p><b>Sample Input:</b> <code>${escapeHTML(q.sampleInput)}</code></p>` : ''}
+                  ${q.expectedOutput ? `<p><b>Expected Output:</b> <code>${escapeHTML(q.expectedOutput)}</code></p>` : ''}
+                </div>
+              `;
+            }
+
+            item.innerHTML = `
+              <div class="q-header">
+                <span class="q-badge badge-${type.toLowerCase()}">${type}</span>
+                <span class="q-num">#${idx + 1}</span>
+              </div>
+              <h4 class="q-text">${escapeHTML(q.question)}</h4>
+              ${optionsHtml}
+              ${codingDetails}
+              ${q.correctAnswer ? `<div class="q-answer"><b>Correct Answer / Key:</b> ${escapeHTML(q.correctAnswer)}</div>` : ''}
+            `;
+            container.appendChild(item);
+          });
+        } else {
+          container.innerHTML = '<p class="empty-state">No questions found for this day.</p>';
+        }
+      } catch (err) {
+        container.innerHTML = '<p class="error-msg">Failed to load questions from MongoDB.</p>';
+      }
+    }
+
+    function closeQuestionModal() {
+      document.getElementById('questionModal').style.display = 'none';
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('questionModal');
+      if (event.target === modal) closeQuestionModal();
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDashboardData();
+
+      // Listen for cross-tab portal events (e.g. Student submits assessment, admin updates)
+      PortalEvents.listen((event) => {
+        if (
+          event.type === 'SUBMISSION_CREATED' ||
+          event.type === 'SUBMISSION_DELETED' ||
+          event.type === 'STUDENT_UPDATED' ||
+          event.type === 'QUESTIONS_UPDATED'
+        ) {
+          loadDashboardData();
+        }
+      });
+
+      // Window focus auto-sync
+      window.addEventListener('focus', () => {
+        loadDashboardData();
+      });
+
+      // Background heartbeat auto-sync every 4 seconds
+      setInterval(() => {
+        loadDashboardData();
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

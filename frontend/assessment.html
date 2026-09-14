@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Assessment — Live Session</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="assessment-body">
+
+  <!-- ASSESSMENT TOP BAR -->
+  <header class="assessment-header">
+    <div class="assessment-header-inner">
+      <div class="test-student-info">
+        <h2 id="studentName">Student</h2>
+        <p>ID: <span id="studentUsername">--</span> | <span id="assessmentDayLabel">Day 1</span> Assessment</p>
+      </div>
+
+      <div class="timer-badge" id="timerBadge">
+        <span class="timer-icon">TIME</span>
+        <span id="timerText">40:00</span>
+      </div>
+
+      <button type="button" class="btn-submit-header" onclick="submitAssessment()">
+        Submit Assessment
+      </button>
+    </div>
+  </header>
+
+  <main class="page-container assessment-container">
+    <!-- LOADING / ERROR STATE -->
+    <div id="loadingState" class="card text-center" style="padding: 40px;">
+      <h2>Loading Assessment Questions from MongoDB...</h2>
+      <p class="text-muted">Please wait while questions for your assigned day are fetched.</p>
+    </div>
+
+    <div id="errorState" class="card alert-box alert-error" style="display:none;"></div>
+
+    <!-- QUESTIONS FORM -->
+    <form id="assessmentForm" style="display:none;" onsubmit="event.preventDefault(); submitAssessment();">
+      <div id="questionsContainer" class="questions-list">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="card submit-card">
+        <div class="submit-card-content">
+          <div>
+            <h3>Ready to finish?</h3>
+            <p>Make sure you have reviewed all MCQs and written your Java code solutions.</p>
+          </div>
+          <button type="submit" id="bottomSubmitBtn" class="btn-primary btn-large">
+            Submit & Evaluate Assessment
+          </button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    let questionsData = [];
+    let timeRemaining = 40 * 60; // 40 minutes in seconds
+    let timerInterval = null;
+    let isSubmitting = false;
+
+    const user = getLoggedInUser();
+    const studentUsername = user ? user.username : (localStorage.getItem('studentUsername') || 'student1');
+    const studentName = user ? user.name : (localStorage.getItem('studentName') || 'Student');
+    const studentYear = user ? user.year : (localStorage.getItem('studentYear') || 'Final Year');
+    let assignedDay = parseInt(localStorage.getItem('assessmentDay') || localStorage.getItem('assignedDay') || '1', 10);
+
+    document.getElementById('studentName').textContent = studentName;
+    document.getElementById('studentUsername').textContent = studentUsername;
+    document.getElementById('assessmentDayLabel').textContent = `Day ${assignedDay}`;
+
+    function startTimer() {
+      const timerEl = document.getElementById('timerText');
+      const badgeEl = document.getElementById('timerBadge');
+
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+
+        const mins = Math.floor(timeRemaining / 60);
+        const secs = timeRemaining % 60;
+        timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (timeRemaining <= 300) { // 5 mins left
+          badgeEl.classList.add('timer-warning');
+        }
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          alert('Time is up! Your assessment will now be automatically submitted.');
+          submitAssessment();
+        }
+      }, 1000);
+    }
+
+    async function loadQuestions() {
+      const loadingEl = document.getElementById('loadingState');
+      const errorEl = document.getElementById('errorState');
+      const formEl = document.getElementById('assessmentForm');
+      const container = document.getElementById('questionsContainer');
+
+      try {
+        const res = await API.getQuestions(assignedDay);
+        loadingEl.style.display = 'none';
+
+        if (res.success && res.questions && res.questions.length > 0) {
+          questionsData = res.questions;
+          container.innerHTML = '';
+
+          questionsData.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'card question-card';
+            const type = String(q.questionType || 'MCQ').trim().toUpperCase();
+
+            let contentHtml = '';
+
+            // MCQ / ERROR questions
+            if (type === 'MCQ' || type === 'ERROR' || type === 'ERROR CORRECTION') {
+              const options = [
+                { key: 'A', text: q.optionA },
+                { key: 'B', text: q.optionB },
+                { key: 'C', text: q.optionC },
+                { key: 'D', text: q.optionD },
+              ].filter(o => o.text);
+
+              contentHtml = `
+                <div class="options-container">
+                  ${options.map(opt => `
+                    <label class="option-label" for="q_${idx}_${opt.key}">
+                      <input type="radio" id="q_${idx}_${opt.key}" name="question_${idx}" value="${opt.key}">
+                      <span class="option-badge">${opt.key}</span>
+                      <span class="option-text">${escapeHTML(opt.text)}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              `;
+            }
+            // CODING questions
+            else if (type === 'CODING') {
+              contentHtml = `
+                <div class="coding-problem-box">
+                  ${q.codingRequirement ? `<div class="code-req"><b>📌 Requirement:</b> ${escapeHTML(q.codingRequirement)}</div>` : ''}
+                  ${q.sampleInput ? `<div class="code-io"><b>Sample Input:</b> <code>${escapeHTML(q.sampleInput)}</code></div>` : ''}
+                  ${q.expectedOutput ? `<div class="code-io"><b>Expected Output:</b> <code>${escapeHTML(q.expectedOutput)}</code></div>` : ''}
+                  ${q.codingEvaluation ? `<div class="code-criteria"><b>Evaluation Logic:</b> ${escapeHTML(q.codingEvaluation)}</div>` : ''}
+                  
+                  <div class="code-editor-wrap">
+                    <div class="editor-header">
+                      <span>☕ Java Solution Code</span>
+                      <small>Write standard Java code with classes and methods</small>
+                    </div>
+                    <textarea class="code-textarea" id="coding_${idx}" placeholder="// Write your complete Java program here...\npublic class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}" rows="12"></textarea>
+                  </div>
+                </div>
+              `;
+            }
+
+            card.innerHTML = `
+              <div class="question-header">
+                <span class="badge-type badge-${type.toLowerCase()}">${type}</span>
+                <span class="question-number">Question ${idx + 1} of ${questionsData.length}</span>
+              </div>
+              <h3 class="question-title">${escapeHTML(q.question)}</h3>
+              ${contentHtml}
+            `;
+
+            container.appendChild(card);
+          });
+
+          formEl.style.display = 'block';
+          startTimer();
+        } else {
+          errorEl.style.display = 'block';
+          errorEl.innerHTML = `
+            <h3>No questions found for Day ${assignedDay}</h3>
+            <p>Please contact your Administrator to upload questions for Day ${assignedDay}.</p>
+            <button type="button" class="btn-secondary" onclick="window.location.href='student.html'">Back to Dashboard</button>
+          `;
+        }
+      } catch (err) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.textContent = 'Failed to load assessment questions from MongoDB.';
+      }
+    }
+
+    async function submitAssessment() {
+      if (isSubmitting) return;
+
+      const confirmSub = confirm('Are you sure you want to submit your assessment?');
+      if (!confirmSub) return;
+
+      isSubmitting = true;
+      clearInterval(timerInterval);
+
+      const headerBtn = document.querySelector('.btn-submit-header');
+      const bottomBtn = document.getElementById('bottomSubmitBtn');
+      if (headerBtn) headerBtn.disabled = true;
+      if (bottomBtn) {
+        bottomBtn.disabled = true;
+        bottomBtn.innerText = 'Evaluating & Saving to MongoDB...';
+      }
+
+      // Collect answers
+      const answers = questionsData.map((q, idx) => {
+        const type = String(q.questionType || 'MCQ').trim().toUpperCase();
+        let studentAnswer = 'Not Answered';
+
+        if (type === 'MCQ' || type === 'ERROR' || type === 'ERROR CORRECTION') {
+          const selected = document.querySelector(`input[name="question_${idx}"]:checked`);
+          if (selected) {
+            studentAnswer = selected.value;
+          }
+        } else if (type === 'CODING') {
+          const codeEl = document.getElementById(`coding_${idx}`);
+          if (codeEl && codeEl.value.trim()) {
+            studentAnswer = codeEl.value.trim();
+          }
+        }
+
+        return {
+          questionId: q._id || q.id,
+          question: q.question,
+          questionType: type,
+          studentAnswer: studentAnswer,
+          correctAnswer: q.correctAnswer,
+          requirement: q.codingRequirement,
+        };
+      });
+
+      const payload = {
+        studentUsername,
+        studentName,
+        studentYear,
+        day: assignedDay,
+        answers,
+      };
+
+      try {
+        const res = await API.submitAssessment(payload);
+        if (res.success && res.submissionId) {
+          localStorage.setItem('currentSubmissionId', res.submissionId);
+          const nextDay = res.newAssignedDay || (assignedDay < 41 ? assignedDay + 1 : 41);
+          localStorage.setItem('assignedDay', String(nextDay));
+          localStorage.setItem('assessmentDay', String(nextDay));
+          window.location.href = `results.html?id=${res.submissionId}`;
+        } else {
+          alert('Submission failed: ' + (res.message || 'Unknown error'));
+          isSubmitting = false;
+        }
+      } catch (err) {
+        console.error('Submission error:', err);
+        alert('Server error during assessment submission.');
+        isSubmitting = false;
+      }
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadQuestions);
+  </script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management — Java Placement Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">JP</div>
+        <div>
+          <div class="brand-title">Student Management</div>
+          <div class="brand-subtitle">Accounts & curriculum assignment</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" class="btn-secondary" onclick="window.location.href='admin.html'">Admin Console</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">Reports</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- ADD STUDENT CARD -->
+    <section class="card">
+      <div class="section-heading">
+        <h2>Register New Student</h2>
+        <p>Add credentials and academic details</p>
+      </div>
+
+      <form id="studentForm" onsubmit="event.preventDefault(); handleAddStudent();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" placeholder="e.g. Rahul Sharma" required>
+          </div>
+
+          <div class="form-group">
+            <label for="regNo">Register Number / Roll No *</label>
+            <input type="text" id="regNo" placeholder="e.g. 717821P101" required>
+          </div>
+
+          <div class="form-group">
+            <label for="dept">Department *</label>
+            <select id="dept" required>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="IT">Information Technology (IT)</option>
+              <option value="AI&DS">AI & Data Science (AI&DS)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="EEE">Electrical (EEE)</option>
+              <option value="MECH">Mechanical (MECH)</option>
+              <option value="CIVIL">Civil (CIVIL)</option>
+              <option value="MCA">MCA</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="year">Batch / Year</label>
+            <select id="year">
+              <option value="Final Year">Final Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="1st Year">1st Year</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username (Login ID) *</label>
+            <input type="text" id="username" placeholder="e.g. rahul123" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password *</label>
+            <input type="text" id="password" placeholder="e.g. pass123" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="assignedDay">Assigned Assessment Day (1 - 41)</label>
+            <select id="assignedDay">
+              <!-- Injected 1 to 41 -->
+            </select>
+          </div>
+        </div>
+
+        <div id="formAlert" class="alert-box" style="display:none; margin-top: 15px;"></div>
+
+        <div style="margin-top: 20px;">
+          <button type="submit" id="addBtn" class="btn-primary">Add Student to MongoDB</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- STUDENTS LIST TABLE CARD -->
+    <section class="card">
+      <div class="section-heading-row" style="flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2>Enrolled Students (<span id="studentCount">0</span>)</h2>
+          <p>Real-time records from MongoDB database (student1 – student200)</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; margin-left: auto; flex-wrap: wrap;">
+          <input type="text" id="studentSearchInput" placeholder="Search student by name, username, reg no..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color, #ccc); font-size: 14px; min-width: 240px;" oninput="filterStudents()">
+          <button type="button" class="btn-secondary btn-sm" onclick="loadStudents()">Refresh</button>
+          <button type="button" class="btn-primary btn-sm" onclick="handleRegenerateAll()" style="background: var(--java-navy, #1e293b);" title="Restores all missing student1 to student200 accounts in MongoDB">🔄 Regenerate 200 Accounts</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Reg No</th>
+              <th>Department</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Year</th>
+              <th>Assigned Day</th>
+              <th>Tests</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr>
+              <td colspan="10" class="text-center">Loading students from MongoDB...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    let allStudents = [];
+
+    // Populate Day Dropdown
+    function populateDayDropdown() {
+      const select = document.getElementById('assignedDay');
+      select.innerHTML = '';
+      for (let i = 1; i <= 41; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Day ${i} Assessment`;
+        select.appendChild(opt);
+      }
+    }
+
+    function renderStudentTable(list) {
+      const tbody = document.getElementById('studentTableBody');
+      const countEl = document.getElementById('studentCount');
+      countEl.textContent = list.length;
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center empty-state">No matching students found.</td></tr>`;
+        return;
+      }
+
+      list.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${escapeHTML(s.name)}</b></td>
+          <td><code>${escapeHTML(s.registerNumber || '-')}</code></td>
+          <td><span class="badge-dept">${escapeHTML(s.department || '-')}</span></td>
+          <td><code>${escapeHTML(s.username)}</code></td>
+          <td><code>${escapeHTML(s.password)}</code></td>
+          <td>${escapeHTML(s.year || 'Final Year')}</td>
+          <td>
+            <select class="select-inline" onchange="changeStudentDay('${s.id}', this.value)">
+              ${Array.from({ length: 41 }, (_, i) => i + 1).map(d => `
+                <option value="${d}" ${d === Number(s.assignedDay) ? 'selected' : ''}>Day ${d}</option>
+              `).join('')}
+            </select>
+          </td>
+          <td><span class="badge-count">${s.testsTaken || 0}</span></td>
+          <td>
+            <button type="button" class="btn-delete" onclick="deleteStudent('${s.id}', '${encodeURIComponent(s.name || '')}', '${encodeURIComponent(s.username || '')}', '${encodeURIComponent(s.password || '1234')}')">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterStudents() {
+      const query = (document.getElementById('studentSearchInput')?.value || '').toLowerCase().trim();
+      if (!query) {
+        renderStudentTable(allStudents);
+        return;
+      }
+      const filtered = allStudents.filter(s =>
+        (s.name && s.name.toLowerCase().includes(query)) ||
+        (s.username && s.username.toLowerCase().includes(query)) ||
+        (s.registerNumber && s.registerNumber.toLowerCase().includes(query)) ||
+        (s.department && s.department.toLowerCase().includes(query))
+      );
+      renderStudentTable(filtered);
+    }
+
+    async function loadStudents() {
+      const tbody = document.getElementById('studentTableBody');
+
+      try {
+        const res = await API.getStudents();
+        if (res.success && res.students) {
+          allStudents = res.students;
+          filterStudents();
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center error-msg">Failed to load students from server.</td></tr>`;
+      }
+    }
+
+    async function handleAddStudent() {
+      const name = document.getElementById('name').value.trim();
+      const registerNumber = document.getElementById('regNo').value.trim();
+      const department = document.getElementById('dept').value;
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const year = document.getElementById('year').value;
+      const assignedDay = parseInt(document.getElementById('assignedDay').value, 10) || 1;
+      const addBtn = document.getElementById('addBtn');
+      const alertBox = document.getElementById('formAlert');
+
+      if (!name || !username || !password) {
+        showFormAlert('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      addBtn.disabled = true;
+      addBtn.innerText = 'Adding to MongoDB...';
+
+      try {
+        const res = await API.createStudent({
+          name,
+          registerNumber,
+          department,
+          username,
+          password,
+          year,
+          assignedDay
+        });
+        if (res.success) {
+          showFormAlert('Student registered successfully in MongoDB!', 'success');
+          document.getElementById('studentForm').reset();
+          populateDayDropdown();
+          loadStudents();
+        } else {
+          showFormAlert(res.message || 'Failed to add student.', 'error');
+        }
+      } catch (err) {
+        showFormAlert('Error connecting to MongoDB backend.', 'error');
+      } finally {
+        addBtn.disabled = false;
+        addBtn.innerText = 'Add Student to MongoDB';
+      }
+    }
+
+    async function changeStudentDay(id, newDay) {
+      try {
+        const res = await API.updateStudent(id, { assignedDay: parseInt(newDay, 10) });
+        if (res.success) {
+          // updated
+        } else {
+          alert('Failed to update student assigned day: ' + res.message);
+          loadStudents();
+        }
+      } catch (err) {
+        alert('Server error updating student day.');
+        loadStudents();
+      }
+    }
+
+    async function deleteStudent(id, encName, encUsername, encPassword) {
+      const name = decodeURIComponent(encName || '');
+      const username = decodeURIComponent(encUsername || '');
+      const password = decodeURIComponent(encPassword || '');
+
+      if (!confirm(`Are you sure you want to delete student "${name}" (${username}) from MongoDB?`)) {
+        return;
+      }
+
+      try {
+        const res = await API.deleteStudent(id);
+        if (res.success) {
+          // Automatically load the deleted student's username and password into the "Register New Student" form
+          if (username) {
+            document.getElementById('username').value = username;
+          }
+          if (password) {
+            document.getElementById('password').value = password;
+          } else {
+            document.getElementById('password').value = '1234';
+          }
+          document.getElementById('name').value = '';
+          document.getElementById('regNo').value = '';
+
+          // Scroll to the registration form and focus the Full Name input field
+          const formCard = document.getElementById('studentForm');
+          if (formCard) {
+            formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => {
+              const nameInput = document.getElementById('name');
+              if (nameInput) nameInput.focus();
+            }, 300);
+          }
+
+          showFormAlert(`Student "${name}" deleted. Credentials (Username: ${username}) loaded automatically into the form above for new registration.`, 'success');
+          loadStudents();
+        } else {
+          alert('Failed to delete student: ' + res.message);
+        }
+      } catch (err) {
+        alert('Error connecting to backend.');
+      }
+    }
+
+    async function handleRegenerateAll() {
+      if (!confirm('Regenerate and restore all 200 student accounts (student1 to student200) in MongoDB? Any missing accounts will be recreated with default password 1234.')) {
+        return;
+      }
+
+      try {
+        const res = await API.regenerateAllStudents();
+        if (res.success) {
+          alert(res.message);
+          loadStudents();
+        } else {
+          alert('Failed to regenerate student accounts: ' + res.message);
+        }
+      } catch (err) {
+        alert('Error connecting to backend.');
+      }
+    }
+
+    function showFormAlert(msg, type = 'error') {
+      const alertBox = document.getElementById('formAlert');
+      alertBox.className = `alert-box alert-${type}`;
+      alertBox.textContent = msg;
+      alertBox.style.display = 'block';
+      setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateDayDropdown();
+      loadStudents();
+
+      // Listen for cross-tab portal events (e.g. Student submits assessment, Admin deletes submission)
+      PortalEvents.listen((event) => {
+        if (
+          event.type === 'SUBMISSION_CREATED' ||
+          event.type === 'SUBMISSION_DELETED' ||
+          event.type === 'STUDENT_UPDATED'
+        ) {
+          loadStudents();
+        }
+      });
+
+      // Window focus auto-sync
+      window.addEventListener('focus', () => {
+        loadStudents();
+      });
+
+      // Heartbeat auto-sync every 4 seconds
+      setInterval(() => {
+        loadStudents();
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

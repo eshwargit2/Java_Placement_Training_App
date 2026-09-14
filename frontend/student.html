@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Workspace — Java Placement Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">JP</div>
+        <div>
+          <div class="brand-title">Student Workspace</div>
+          <div class="brand-subtitle">Java Placement Training & Assessment</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" class="btn-secondary" onclick="openProfileModal(false, true)">My Profile</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">My Reports</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- STUDENT PROFILE CARD -->
+    <section class="card profile-card">
+      <div class="profile-header-wrap">
+        <div class="profile-header">
+          <div class="avatar-circle" id="studentAvatar">S</div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <h1 id="studentName">Loading...</h1>
+              <span class="badge-dept" id="studentDeptBadge">--</span>
+            </div>
+            <p id="studentMeta" style="margin-top: 4px;">
+              Reg No: <b id="studentRegNo" style="color: var(--primary);">--</b> | 
+              Username: <code id="studentUsername">--</code> | 
+              Batch: <span id="studentYear">--</span>
+            </p>
+          </div>
+        </div>
+        <button type="button" class="btn-secondary btn-sm" onclick="openProfileModal(false, true)">
+          Edit Details
+        </button>
+      </div>
+
+      <div class="profile-grid">
+        <div class="profile-box">
+          <span class="box-label">Current Curriculum Day</span>
+          <h3 id="assignedDayDisplay" class="box-val text-primary">Day 1</h3>
+        </div>
+
+        <div class="profile-box">
+          <span class="box-label">Department</span>
+          <h3 id="departmentDisplay" class="box-val">--</h3>
+        </div>
+
+        <div class="profile-box">
+          <span class="box-label">Tests Completed</span>
+          <h3 id="completedCount" class="box-val">0</h3>
+        </div>
+
+        <div class="profile-box">
+          <span class="box-label">Average Score</span>
+          <h3 id="avgScoreDisplay" class="box-val">0%</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTIVE ASSESSMENT LAUNCH CARD -->
+    <section class="card highlight-card">
+      <div class="highlight-content">
+        <div class="day-badge-large" id="currentDayBadge">Day 1 Assessment</div>
+        <h2 id="topicTitle">Java Placement Practice Assessment</h2>
+        <p>Complete your scheduled assessment with MCQs, error correction, and algorithmic Java coding. Scores are evaluated automatically.</p>
+        <ul class="test-rules-list">
+          <li><strong>Duration:</strong> 40-minute timed session</li>
+          <li><strong>Format:</strong> MCQ · Error debugging · Live Java coding</li>
+          <li><strong>Evaluation:</strong> Instant scoring with detailed review</li>
+        </ul>
+        <button type="button" class="btn-primary btn-large" onclick="startAssessment()">
+          Launch Day <span id="btnDayNum">1</span> Assessment
+        </button>
+      </div>
+    </section>
+
+    <!-- PREVIOUS SUBMISSIONS CARD -->
+    <section class="card">
+      <div class="section-heading-row">
+        <div>
+          <h2>My Test History</h2>
+          <p>Review past assessment scores and detailed answer sheets</p>
+        </div>
+        <button type="button" class="btn-secondary btn-sm" onclick="loadStudentData()">Refresh</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Status</th>
+              <th>Submitted Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr>
+              <td colspan="6" class="text-center">Loading assessment records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- STUDENT DETAILS ENTRY / EDIT MODAL -->
+  <div id="profileModal" class="modal">
+    <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h2>👤 Student Profile Setup</h2>
+          <p id="modalSubtext">Enter your details to save with your login ID in MongoDB</p>
+        </div>
+        <button type="button" id="modalHeaderCloseBtn" class="modal-close" onclick="closeProfileModal()">&times;</button>
+      </div>
+      <form id="profileForm" onsubmit="event.preventDefault(); handleSaveProfile();">
+        <div class="modal-body">
+          <div class="form-field">
+            <label for="profName">Full Name *</label>
+            <input type="text" id="profName" placeholder="e.g. Eshwar" required>
+          </div>
+
+          <div class="form-field">
+            <label for="profRegNo">Register Number / Roll Number *</label>
+            <input type="text" id="profRegNo" placeholder="e.g. 717821P102 / 21CS045" required>
+          </div>
+
+          <div class="form-field">
+            <label for="profDept">Department *</label>
+            <select id="profDept" required>
+              <option value="">-- Select Department --</option>
+              <option value="Computer Science and Engineering (CSE)">Computer Science and Engineering (CSE)</option>
+              <option value="Information Technology (IT)">Information Technology (IT)</option>
+              <option value="Artificial Intelligence & Data Science (AI&DS)">Artificial Intelligence & Data Science (AI&DS)</option>
+             
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="profYear">Academic Year *</label>
+            <select id="profYear" required>
+              <option value="Final Year">Final Year (4th Year)</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="1st Year">1st Year</option>
+            </select>
+          </div>
+
+          <div id="profileAlert" class="alert-box" style="display:none;"></div>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" id="modalCancelBtn" class="btn-secondary" onclick="closeProfileModal()">Cancel</button>
+          <button type="submit" id="saveProfBtn" class="btn-primary" style="width: auto;">💾 Save Details to MongoDB</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PYTHON PLACEMENT APP PROMO MODAL -->
+  <div id="pythonPromoModal" class="modal" style="z-index: 3000;">
+    <div class="promo-modal-dialog">
+      <div class="promo-hero-banner">
+        <button type="button" class="promo-close-btn" onclick="closePythonPromo(false)" title="Close">&times;</button>
+        <span class="promo-badge-tag">🐍 Placement Training Portal</span>
+        <h2 class="promo-hero-title">Python Placement Training App</h2>
+        <p class="promo-hero-sub">Vinayaka Mission's Kirupananda Variyar Engineering College (VMKVEC)</p>
+      </div>
+
+      <div class="promo-body">
+        <p style="font-size: 14px; color: #334155; line-height: 1.5; margin-bottom: 16px;">
+          Practice day-wise Python assessments, debugging challenges, coding problems, and mock tests customized for VMKVEC placement preparation.
+        </p>
+
+        <div class="promo-features">
+          <div class="promo-feat-item">
+            <div class="promo-feat-icon">⚡</div>
+            <div><strong>Curated Question Bank:</strong> Day-by-day MCQs and error fixing</div>
+          </div>
+          <div class="promo-feat-item">
+            <div class="promo-feat-icon">💻</div>
+            <div><strong>Interactive Python Coding:</strong> Practice coding challenges directly in browser</div>
+          </div>
+          <div class="promo-feat-item">
+            <div class="promo-feat-icon">📊</div>
+            <div><strong>Instant Evaluation:</strong> Detailed test analysis & score tracking</div>
+          </div>
+        </div>
+
+        <div class="promo-link-box">
+          <div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Portal URL</div>
+            <div class="promo-link-text">vmkvec-cse-training.web.app</div>
+          </div>
+          <a href="https://vmkvec-cse-training.web.app" target="_blank" rel="noopener noreferrer" class="btn-promo-visit-icon" title="Open Link">↗</a>
+        </div>
+      </div>
+
+      <div class="promo-footer">
+        <button type="button" class="btn-promo-skip" onclick="closePythonPromo(false)">Skip</button>
+        <button type="button" class="btn-promo-primary" onclick="closePythonPromo(true)">
+          🚀 Try Python App
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    let currentStudent = null;
+
+    async function loadStudentData() {
+      const user = getLoggedInUser();
+      const username = user ? user.username : localStorage.getItem('studentUsername');
+
+      if (!username) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const res = await API.getStudent(username);
+        if (res.success && res.student) {
+          currentStudent = res.student;
+
+          document.getElementById('studentName').textContent = currentStudent.name || 'Student';
+          document.getElementById('studentUsername').textContent = currentStudent.username;
+          document.getElementById('studentRegNo').textContent = currentStudent.registerNumber || 'Not Set';
+          document.getElementById('studentDeptBadge').textContent = currentStudent.department ? currentStudent.department.split('(')[1]?.replace(')', '') || currentStudent.department : 'Dept: Not Set';
+          document.getElementById('departmentDisplay').textContent = currentStudent.department || 'Not Set';
+          document.getElementById('studentYear').textContent = currentStudent.year || 'Final Year';
+          document.getElementById('studentAvatar').textContent = (currentStudent.name || 'S').charAt(0).toUpperCase();
+
+          const day = currentStudent.assignedDay || 1;
+          document.getElementById('assignedDayDisplay').textContent = `Day ${day}`;
+          document.getElementById('currentDayBadge').textContent = `Day ${day} Assessment`;
+          document.getElementById('btnDayNum').textContent = day;
+          document.getElementById('topicTitle').textContent = `Day ${day} Java Placement Practice Assessment`;
+
+          localStorage.setItem('assignedDay', String(day));
+          localStorage.setItem('assessmentDay', String(day));
+
+          // Save session
+          setLoggedInUser({
+            ...user,
+            ...currentStudent,
+            assignedDay: day
+          });
+
+          // If student has not completed profile or missing essential info, prompt details setup modal
+          const modal = document.getElementById('profileModal');
+          const isModalOpen = modal && modal.style.display === 'flex';
+          if (!currentStudent.profileCompleted || !currentStudent.registerNumber || !currentStudent.department) {
+            if (!isModalOpen) {
+              openProfileModal(true);
+            }
+          }
+
+          // Submissions
+          const submissions = res.submissions || [];
+          document.getElementById('completedCount').textContent = submissions.length;
+
+          if (submissions.length > 0) {
+            const avg = Math.round(submissions.reduce((acc, curr) => acc + curr.percentage, 0) / submissions.length);
+            document.getElementById('avgScoreDisplay').textContent = `${avg}%`;
+          }
+
+          renderHistory(submissions);
+        }
+      } catch (err) {
+        console.error('Error loading student data:', err);
+      }
+    }
+
+    function openProfileModal(isFirstTime = false, forceReset = false) {
+      const modal = document.getElementById('profileModal');
+      const isAlreadyOpen = modal && modal.style.display === 'flex';
+      const subtext = document.getElementById('modalSubtext');
+      const cancelBtn = document.getElementById('modalCancelBtn');
+      const headerCloseBtn = document.getElementById('modalHeaderCloseBtn');
+
+      if (isFirstTime) {
+        if (subtext) subtext.textContent = 'Welcome! Please enter your details to set up your profile and dashboard.';
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        if (headerCloseBtn) headerCloseBtn.style.display = 'none';
+      } else {
+        if (subtext) subtext.textContent = 'Update your academic details in MongoDB';
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+        if (headerCloseBtn) headerCloseBtn.style.display = 'block';
+      }
+
+      // Only populate fields if modal was not already open or if forceReset is explicitly requested
+      if ((!isAlreadyOpen || forceReset) && currentStudent) {
+        const isPlaceholderName = !currentStudent.profileCompleted && /^Student\s+\d+$/i.test(currentStudent.name);
+        document.getElementById('profName').value = isPlaceholderName ? '' : (currentStudent.name || '');
+        document.getElementById('profRegNo').value = currentStudent.registerNumber || '';
+        
+        const deptSelect = document.getElementById('profDept');
+        const deptVal = currentStudent.department || '';
+        let found = false;
+        for (let opt of deptSelect.options) {
+          if (opt.value && deptVal && (opt.value === deptVal || opt.value.includes(deptVal) || deptVal.includes(opt.value))) {
+            deptSelect.value = opt.value;
+            found = true;
+            break;
+          }
+        }
+        if (!found) deptSelect.value = '';
+
+        document.getElementById('profYear').value = currentStudent.year || 'Final Year';
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').style.display = 'none';
+    }
+
+    async function handleSaveProfile() {
+      const user = getLoggedInUser();
+      const username = user ? user.username : localStorage.getItem('studentUsername');
+      const name = document.getElementById('profName').value.trim();
+      const registerNumber = document.getElementById('profRegNo').value.trim();
+      const department = document.getElementById('profDept').value;
+      const year = document.getElementById('profYear').value;
+
+      const saveBtn = document.getElementById('saveProfBtn');
+      const alertBox = document.getElementById('profileAlert');
+
+      if (!name || !registerNumber || !department) {
+        alertBox.className = 'alert-box alert-error';
+        alertBox.textContent = 'Please fill in all required profile details.';
+        alertBox.style.display = 'block';
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Saving to MongoDB...';
+
+      try {
+        const res = await API.updateStudentProfile({
+          username,
+          name,
+          registerNumber,
+          department,
+          year,
+        });
+
+        if (res.success && res.student) {
+          alertBox.className = 'alert-box alert-success';
+          alertBox.textContent = 'Profile details saved successfully in MongoDB!';
+          alertBox.style.display = 'block';
+
+          currentStudent = { ...currentStudent, ...res.student, profileCompleted: true };
+          setLoggedInUser({ ...user, ...res.student, profileCompleted: true });
+
+          setTimeout(() => {
+            closeProfileModal();
+            loadStudentData();
+          }, 800);
+        } else {
+          alertBox.className = 'alert-box alert-error';
+          alertBox.textContent = res.message || 'Failed to update profile.';
+          alertBox.style.display = 'block';
+        }
+      } catch (err) {
+        alertBox.className = 'alert-box alert-error';
+        alertBox.textContent = 'Error connecting to backend.';
+        alertBox.style.display = 'block';
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = '💾 Save Details to MongoDB';
+      }
+    }
+
+    function renderHistory(submissions) {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      if (submissions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center empty-state">No assessments completed yet. Start your first test above!</td></tr>`;
+        return;
+      }
+
+      submissions.forEach(sub => {
+        const tr = document.createElement('tr');
+        const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Recent';
+        const isPassed = sub.percentage >= 50;
+        
+        tr.innerHTML = `
+          <td><b>Day ${sub.day}</b></td>
+          <td><b>${sub.score}</b> / ${sub.total}</td>
+          <td><span class="badge-${isPassed ? 'passed' : 'failed'}">${sub.percentage}%</span></td>
+          <td><span class="status-badge ${isPassed ? 'status-pass' : 'status-fail'}">${sub.status || 'Completed'}</span></td>
+          <td>${dateStr}</td>
+          <td>
+            <button type="button" class="btn-sm btn-secondary" onclick="viewResultDetail('${sub._id}')">
+              View Review
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function startAssessment() {
+      const day = currentStudent ? (currentStudent.assignedDay || 1) : parseInt(localStorage.getItem('assignedDay') || localStorage.getItem('assessmentDay') || '1', 10);
+      localStorage.setItem('assessmentDay', String(day));
+      localStorage.setItem('assignedDay', String(day));
+      window.location.href = 'assessment.html';
+    }
+
+    function viewResultDetail(submissionId) {
+      localStorage.setItem('currentSubmissionId', submissionId);
+      window.location.href = 'results.html?id=' + submissionId;
+    }
+
+    function showLiveToast(message, type = 'info') {
+      let toast = document.getElementById('liveSyncToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'liveSyncToast';
+        toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; padding: 14px 20px; border-radius: 8px; color: #fff; font-size: 14px; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px;';
+        document.body.appendChild(toast);
+      }
+      toast.style.background = type === 'success' ? '#16a34a' : (type === 'warning' ? '#ea580c' : '#2563eb');
+      toast.innerHTML = `<span>${message}</span>`;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+      }, 4000);
+    }
+
+    function checkPythonPromoPopup() {
+      if (sessionStorage.getItem('showPythonPromo') === 'true') {
+        sessionStorage.removeItem('showPythonPromo'); // Show once per login
+        const modal = document.getElementById('pythonPromoModal');
+        if (modal) modal.style.display = 'flex';
+      }
+    }
+
+    function closePythonPromo(goToLink = false) {
+      sessionStorage.removeItem('showPythonPromo');
+      const modal = document.getElementById('pythonPromoModal');
+      if (modal) modal.style.display = 'none';
+      if (goToLink) {
+        window.open('https://vmkvec-cse-training.web.app', '_blank', 'noopener,noreferrer');
+      }
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('profileModal');
+      const promoModal = document.getElementById('pythonPromoModal');
+      if (event.target === modal) {
+        if (currentStudent && currentStudent.profileCompleted) {
+          closeProfileModal();
+        }
+      }
+      if (event.target === promoModal) {
+        closePythonPromo(false);
+      }
+    };
+
+    // Live Sync & Event Setup
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStudentData();
+      checkPythonPromoPopup();
+
+      // Listen for cross-tab portal events (e.g. Admin deletes a submission)
+      PortalEvents.listen((event) => {
+        const user = getLoggedInUser();
+        const myUsername = user ? String(user.username).trim().toLowerCase() : '';
+
+        if (event.type === 'SUBMISSION_DELETED') {
+          // If deleted submission belonged to this student or general update, re-sync state immediately
+          if (!event.payload.studentUsername || event.payload.studentUsername === myUsername) {
+            loadStudentData();
+            showLiveToast(`⚡ Assessment record updated by Admin. Active Curriculum is now Day ${event.payload.newAssignedDay || 1}.`, 'warning');
+          }
+        } else if (event.type === 'SUBMISSION_CREATED') {
+          if (event.payload.studentUsername === myUsername) {
+            loadStudentData();
+          }
+        } else if (event.type === 'STUDENT_UPDATED') {
+          loadStudentData();
+        }
+      });
+
+      // Auto-sync whenever the student switches back to this tab
+      window.addEventListener('focus', () => {
+        loadStudentData();
+      });
+
+      // Heartbeat background sync every 4 seconds to catch any external changes
+      setInterval(() => {
+        loadStudentData();
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

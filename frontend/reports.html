@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Reports — Java Placement Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">JP</div>
+        <div>
+          <div class="brand-title">Assessment Reports</div>
+          <div class="brand-subtitle">Performance analytics & answer sheets</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" class="btn-secondary" id="backDashboardBtn" onclick="goBackDashboard()">Back to Dashboard</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- FILTERS ROW -->
+    <section class="card filter-card">
+      <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end;">
+        <div class="form-group" id="studentFilterGroup" style="position: relative;">
+          <label for="filterStudent">Filter by Student (Search)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="text" id="filterStudent" placeholder="Search name, username, reg no..." oninput="applyFilters()" style="padding-right: 28px; width: 100%;">
+            <button type="button" id="clearStudentSearchBtn" onclick="clearStudentSearch()" style="display: none; position: absolute; right: 8px; background: none; border: none; font-size: 14px; cursor: pointer; color: #94a3b8;" title="Clear search">&times;</button>
+          </div>
+        </div>
+
+        <div class="form-group" id="studentSelectGroup">
+          <label for="filterStudentSelect">Select Student</label>
+          <select id="filterStudentSelect" onchange="handleStudentSelect(this.value)">
+            <option value="">All Students (1 - 200)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="filterDay">Assessment Day</label>
+          <select id="filterDay" onchange="applyFilters()">
+            <option value="">All Days (1 - 41)</option>
+            <!-- Injected 1-41 -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="filterStatus">Status</label>
+          <select id="filterStatus" onchange="applyFilters()">
+            <option value="">All Results</option>
+            <option value="Passed">Passed (>= 50%)</option>
+            <option value="Completed">Completed / Below 50%</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-secondary btn-sm" onclick="resetAllFilters()" title="Reset All Filters">🔄 Reset</button>
+          <button type="button" id="btnExportCSV" class="btn-secondary" onclick="exportToCSV()" title="Download CSV Spreadsheet">📥 Export CSV</button>
+          <button type="button" id="btnExportSummaryPDF" class="btn-secondary" onclick="exportToPDF()" title="Download Summary PDF Table">📄 Export Summary PDF</button>
+          <button type="button" id="btnExportDetailedPDF" class="btn-primary" onclick="exportAllDetailsPDF()" title="Download Full PDF with All Questions, Options, Answers & Code">📑 Export All Details PDF</button>
+        </div>
+      </div>
+
+      <div id="activeFilterBadge" style="margin-top: 12px; font-size: 13px; color: #475569; display: flex; align-items: center; gap: 8px;">
+        <span class="day-badge" id="activeFilterText">Showing All Submissions</span>
+      </div>
+    </section>
+
+    <!-- REPORTS TABLE CARD -->
+    <section class="card">
+      <div class="section-heading-row">
+        <div>
+          <h2>Submissions Log (<span id="submissionCount">0</span> records)</h2>
+          <p>Click on "Inspect" to view complete question-by-question breakdown</p>
+        </div>
+        <button type="button" class="btn-secondary btn-sm" onclick="loadReports()">Refresh</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Reg No</th>
+              <th>Department</th>
+              <th>Username</th>
+              <th>Day</th>
+              <th>Score</th>
+              <th>Percentage</th>
+              <th>Status</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody">
+            <tr>
+              <td colspan="11" class="text-center">Loading reports from MongoDB...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- REPORT INSPECT MODAL -->
+  <div id="inspectModal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalStudentTitle">Submission Breakdown</h2>
+          <p id="modalSubMeta">Stored in MongoDB</p>
+        </div>
+        <button type="button" class="modal-close" onclick="closeInspectModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalAnswerSheet">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <button type="button" class="btn-primary btn-sm" onclick="exportSingleStudentPDF()">📄 Download Student Report (PDF)</button>
+        <button type="button" class="btn-secondary" onclick="closeInspectModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    let allSubmissions = [];
+    let currentFilteredSubmissions = [];
+    let currentInspectedSubmission = null;
+    let enrolledStudentsList = [];
+    const user = getLoggedInUser();
+    const isAdmin = user && user.role === 'admin';
+
+    function goBackDashboard() {
+      if (isAdmin) {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'student.html';
+      }
+    }
+
+    function populateDayFilter() {
+      const select = document.getElementById('filterDay');
+      select.innerHTML = '<option value="">All Days (1 - 41)</option>';
+      for (let i = 1; i <= 41; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Day ${i} Assessment`;
+        select.appendChild(opt);
+      }
+    }
+
+    async function populateStudentDropdown() {
+      const select = document.getElementById('filterStudentSelect');
+      if (!select) return;
+
+      try {
+        const res = await API.getStudents();
+        if (res.success && res.students) {
+          enrolledStudentsList = res.students;
+          select.innerHTML = '<option value="">All Students (1 - 200)</option>';
+          res.students.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.username;
+            opt.textContent = `${s.username} — ${s.name} (${s.registerNumber || s.department || 'Student'})`;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Error populating student list:', err);
+      }
+    }
+
+    function handleStudentSelect(username) {
+      const input = document.getElementById('filterStudent');
+      if (input) {
+        input.value = username || '';
+      }
+      applyFilters();
+    }
+
+    function clearStudentSearch() {
+      const input = document.getElementById('filterStudent');
+      const select = document.getElementById('filterStudentSelect');
+      if (input) input.value = '';
+      if (select) select.value = '';
+      applyFilters();
+    }
+
+    function resetAllFilters() {
+      const input = document.getElementById('filterStudent');
+      const studentSelect = document.getElementById('filterStudentSelect');
+      const daySelect = document.getElementById('filterDay');
+      const statusSelect = document.getElementById('filterStatus');
+
+      if (input) input.value = '';
+      if (studentSelect) studentSelect.value = '';
+      if (daySelect) daySelect.value = '';
+      if (statusSelect) statusSelect.value = '';
+
+      applyFilters();
+    }
+
+    async function loadReports() {
+      const filter = {};
+      if (!isAdmin && user && user.username) {
+        filter.studentUsername = user.username;
+        const studentFilter = document.getElementById('studentFilterGroup');
+        const studentSelectGroup = document.getElementById('studentSelectGroup');
+        if (studentFilter) studentFilter.style.display = 'none';
+        if (studentSelectGroup) studentSelectGroup.style.display = 'none';
+      }
+
+      try {
+        const res = await API.getSubmissions(filter);
+        if (res.success && res.submissions) {
+          allSubmissions = res.submissions;
+          applyFilters();
+        }
+      } catch (err) {
+        console.error('Error loading reports:', err);
+      }
+    }
+
+    function applyFilters() {
+      const studentQuery = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.toLowerCase().trim() : '';
+      const dayQuery = document.getElementById('filterDay') ? document.getElementById('filterDay').value : '';
+      const statusQuery = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : '';
+      const clearBtn = document.getElementById('clearStudentSearchBtn');
+
+      if (clearBtn) {
+        clearBtn.style.display = studentQuery ? 'block' : 'none';
+      }
+
+      // Sync student dropdown if matching
+      const studentSelect = document.getElementById('filterStudentSelect');
+      if (studentSelect && studentQuery) {
+        let matched = false;
+        for (let opt of studentSelect.options) {
+          if (opt.value && opt.value.toLowerCase() === studentQuery) {
+            studentSelect.value = opt.value;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) studentSelect.value = '';
+      } else if (studentSelect && !studentQuery) {
+        studentSelect.value = '';
+      }
+
+      currentFilteredSubmissions = allSubmissions.filter(sub => {
+        if (studentQuery) {
+          const matchName = (sub.studentName || '').toLowerCase().includes(studentQuery);
+          const matchUser = (sub.studentUsername || '').toLowerCase().includes(studentQuery);
+          const matchReg = (sub.registerNumber || '').toLowerCase().includes(studentQuery);
+          const matchDept = (sub.department || '').toLowerCase().includes(studentQuery);
+          if (!matchName && !matchUser && !matchReg && !matchDept) return false;
+        }
+
+        if (dayQuery && String(sub.day) !== String(dayQuery)) {
+          return false;
+        }
+
+        if (statusQuery) {
+          if (statusQuery === 'Passed' && sub.percentage < 50) return false;
+          if (statusQuery === 'Completed' && sub.percentage >= 50) return false;
+        }
+
+        return true;
+      });
+
+      // Update export buttons text dynamically for selected Day
+      const btnCSV = document.getElementById('btnExportCSV');
+      const btnSummaryPDF = document.getElementById('btnExportSummaryPDF');
+      const btnDetailedPDF = document.getElementById('btnExportDetailedPDF');
+      const activeFilterText = document.getElementById('activeFilterText');
+
+      if (dayQuery) {
+        if (btnCSV) btnCSV.textContent = `📥 Export Day ${dayQuery} CSV`;
+        if (btnSummaryPDF) btnSummaryPDF.textContent = `📄 Export Day ${dayQuery} Summary PDF`;
+        if (btnDetailedPDF) btnDetailedPDF.textContent = `📑 Export Day ${dayQuery} All Details PDF`;
+      } else {
+        if (btnCSV) btnCSV.textContent = `📥 Export CSV`;
+        if (btnSummaryPDF) btnSummaryPDF.textContent = `📄 Export Summary PDF`;
+        if (btnDetailedPDF) btnDetailedPDF.textContent = `📑 Export All Details PDF`;
+      }
+
+      // Update active filter pill summary
+      if (activeFilterText) {
+        const filtersUsed = [];
+        if (dayQuery) filtersUsed.push(`Day ${dayQuery}`);
+        if (studentQuery) filtersUsed.push(`Student: "${studentQuery}"`);
+        if (statusQuery) filtersUsed.push(`Status: ${statusQuery}`);
+
+        if (filtersUsed.length > 0) {
+          activeFilterText.textContent = `📌 Filtered: ${filtersUsed.join(' | ')} (Showing ${currentFilteredSubmissions.length} of ${allSubmissions.length} records)`;
+          activeFilterText.className = 'day-badge';
+        } else {
+          activeFilterText.textContent = `Showing All Submissions (${currentFilteredSubmissions.length} records)`;
+          activeFilterText.className = 'day-badge';
+        }
+      }
+
+      renderTable(currentFilteredSubmissions);
+    }
+
+    function renderTable(submissions) {
+      const tbody = document.getElementById('reportsTableBody');
+      const countEl = document.getElementById('submissionCount');
+      countEl.textContent = submissions.length;
+      tbody.innerHTML = '';
+
+      if (submissions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center empty-state">No matching assessment reports found.</td></tr>`;
+        return;
+      }
+
+      submissions.forEach((sub, idx) => {
+        const tr = document.createElement('tr');
+        const isPassed = sub.percentage >= 50;
+        const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Recent';
+
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><b>${escapeHTML(sub.studentName)}</b></td>
+          <td><code>${escapeHTML(sub.registerNumber || '-')}</code></td>
+          <td><span class="badge-dept">${escapeHTML(sub.department || '-')}</span></td>
+          <td><code>${escapeHTML(sub.studentUsername)}</code></td>
+          <td><span class="day-badge">Day ${sub.day}</span></td>
+          <td><b>${sub.score}</b> / ${sub.total}</td>
+          <td><span class="badge-${isPassed ? 'passed' : 'failed'}">${sub.percentage}%</span></td>
+          <td><span class="status-badge ${isPassed ? 'status-pass' : 'status-fail'}">${sub.status || (isPassed ? 'Passed' : 'Completed')}</span></td>
+          <td>${dateStr}</td>
+          <td>
+            <button type="button" class="btn-sm btn-secondary" onclick="inspectSubmission('${sub._id}')">
+              Inspect
+            </button>
+            ${isAdmin ? `<button type="button" class="btn-sm btn-delete" onclick="deleteSubmission('${sub._id}')">Delete</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function inspectSubmission(id) {
+      const modal = document.getElementById('inspectModal');
+      const title = document.getElementById('modalStudentTitle');
+      const meta = document.getElementById('modalSubMeta');
+      const container = document.getElementById('modalAnswerSheet');
+
+      container.innerHTML = '<div class="loading-state">Loading submission breakdown from MongoDB...</div>';
+      modal.style.display = 'flex';
+
+      try {
+        const res = await API.getSubmission(id);
+        if (res.success && res.submission) {
+          const sub = res.submission;
+          currentInspectedSubmission = sub;
+          title.textContent = `${sub.studentName} (${sub.registerNumber || sub.studentUsername}) - Day ${sub.day}`;
+          meta.textContent = `Dept: ${sub.department || 'N/A'} | Score: ${sub.score}/${sub.total} (${sub.percentage}%) | Submitted: ${new Date(sub.submittedAt).toLocaleString()}`;
+
+          container.innerHTML = '';
+          const sheet = sub.answerSheet || [];
+
+          if (sheet.length === 0) {
+            container.innerHTML = '<p class="empty-state">No answer details recorded.</p>';
+            return;
+          }
+
+          sheet.forEach((item, idx) => {
+            const card = document.createElement('div');
+            const type = item.questionType || 'MCQ';
+            const status = item.status || 'Wrong';
+            const isCorrect = status === 'Correct';
+            const isPartial = status === 'Partial';
+
+            let statusClass = 'status-wrong';
+            if (isCorrect) statusClass = 'status-correct';
+            else if (isPartial) statusClass = 'status-partial';
+
+            card.className = `answer-card ${statusClass}`;
+
+            let optionsHtml = '';
+            if (item.optionA || item.optionB || item.optionC || item.optionD) {
+              optionsHtml = `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; background: #f8fafc; padding: 8px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e2e8f0;">
+                  <div><b>A:</b> ${escapeHTML(item.optionA || '-')}</div>
+                  <div><b>B:</b> ${escapeHTML(item.optionB || '-')}</div>
+                  <div><b>C:</b> ${escapeHTML(item.optionC || '-')}</div>
+                  <div><b>D:</b> ${escapeHTML(item.optionD || '-')}</div>
+                </div>
+              `;
+            }
+
+            let codeSection = '';
+            if (type === 'CODING') {
+              codeSection = `
+                <div class="code-review-wrap">
+                  <span class="code-review-label">Submitted Java Code:</span>
+                  <pre class="code-block"><code>${escapeHTML(item.studentAnswer || 'No code')}</code></pre>
+                </div>
+                ${item.evaluationNotes ? `<div class="eval-notes"><b>Evaluation Notes:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
+              `;
+            } else {
+              codeSection = `
+                ${optionsHtml}
+                <div class="answer-row">
+                  <div><b>Student Answer:</b> <span class="ans-val">${escapeHTML(item.studentAnswer || 'Not Answered')}</span></div>
+                  <div><b>Correct Answer:</b> <span class="ans-key">${escapeHTML(item.correctAnswer || '')}</span></div>
+                </div>
+              `;
+            }
+
+            card.innerHTML = `
+              <div class="answer-card-header">
+                <div class="q-meta">
+                  <span class="badge-type badge-${type.toLowerCase()}">${type}</span>
+                  <span class="q-idx">Q${idx + 1}</span>
+                </div>
+                <div class="status-indicator ${statusClass}">
+                  <span>${status} (${item.score || 0} pt)</span>
+                </div>
+              </div>
+              <h4 class="answer-q-title">${escapeHTML(item.question)}</h4>
+              ${codeSection}
+            `;
+            container.appendChild(card);
+          });
+        }
+      } catch (err) {
+        container.innerHTML = '<p class="error-msg">Failed to load submission.</p>';
+      }
+    }
+
+    function closeInspectModal() {
+      document.getElementById('inspectModal').style.display = 'none';
+      currentInspectedSubmission = null;
+    }
+
+    async function deleteSubmission(id) {
+      if (!confirm('Are you sure you want to delete this submission record from MongoDB?')) return;
+      try {
+        const res = await API.deleteSubmission(id);
+        if (res.success) {
+          loadReports();
+        } else {
+          alert('Delete failed: ' + res.message);
+        }
+      } catch (err) {
+        alert('Server error during deletion.');
+      }
+    }
+
+    // CSV Export Feature (Supports Day-wise & Student-wise)
+    function exportToCSV() {
+      const list = currentFilteredSubmissions.length > 0 ? currentFilteredSubmissions : allSubmissions;
+      if (!list || list.length === 0) {
+        alert('No submission records found to export.');
+        return;
+      }
+
+      const dayQuery = document.getElementById('filterDay') ? document.getElementById('filterDay').value : '';
+      const studentQuery = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.trim() : '';
+
+      let csv = 'No,Student Name,Register Number,Department,Username,Batch/Year,Assessment Day,Score,Total Questions,Percentage,Status,Submitted Date\n';
+      list.forEach((s, idx) => {
+        const dateStr = s.submittedAt ? new Date(s.submittedAt).toLocaleString() : '';
+        const safeName = (s.studentName || '').replace(/"/g, '""');
+        const safeReg = (s.registerNumber || '').replace(/"/g, '""');
+        const safeDept = (s.department || '').replace(/"/g, '""');
+        const safeUser = (s.studentUsername || '').replace(/"/g, '""');
+        const safeYear = (s.studentYear || 'Final Year').replace(/"/g, '""');
+        const safeStatus = (s.status || (s.percentage >= 50 ? 'Passed' : 'Completed')).replace(/"/g, '""');
+
+        csv += `${idx + 1},"${safeName}","${safeReg}","${safeDept}","${safeUser}","${safeYear}",${s.day},${s.score},${s.total},${s.percentage}%,"${safeStatus}","${dateStr}"\n`;
+      });
+
+      let filenamePrefix = 'Java_Placement';
+      if (dayQuery) filenamePrefix += `_Day_${dayQuery}`;
+      if (studentQuery) filenamePrefix += `_${studentQuery.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      filenamePrefix += `_Assessment_Reports_${Date.now()}.csv`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filenamePrefix;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // PDF Table Export Feature (Supports Day-wise & Student-wise)
+    function exportToPDF() {
+      const list = currentFilteredSubmissions.length > 0 ? currentFilteredSubmissions : allSubmissions;
+      if (!list || list.length === 0) {
+        alert('No submission records found to export.');
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF generator library is still loading. Please try again in a moment.');
+        return;
+      }
+
+      const dayQuery = document.getElementById('filterDay') ? document.getElementById('filterDay').value : '';
+      const studentQuery = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.trim() : '';
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape', 'pt', 'a4');
+
+      // Title & Header branding
+      doc.setFontSize(18);
+      doc.setTextColor(26, 43, 76);
+      let mainTitle = 'Java Placement Assessment Portal — Submission Records';
+      if (dayQuery) {
+        mainTitle = `Java Placement Assessment Portal — Day ${dayQuery} Submissions`;
+      }
+      doc.text(mainTitle, 40, 45);
+
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      const nowStr = new Date().toLocaleString();
+      const passedCount = list.filter(s => s.percentage >= 50).length;
+      const passRate = list.length > 0 ? Math.round((passedCount / list.length) * 100) : 0;
+      
+      let subTitleText = `Generated on: ${nowStr} | Total Records: ${list.length} | Passed: ${passedCount} (${passRate}%)`;
+      if (studentQuery) {
+        subTitleText += ` | Student: ${studentQuery}`;
+      }
+      doc.text(subTitleText, 40, 65);
+
+      // Table Data
+      const tableHead = [['#', 'Student Name', 'Reg No', 'Department', 'Username', 'Day', 'Score', 'Percentage', 'Status', 'Submitted Date']];
+      const tableRows = list.map((s, idx) => [
+        idx + 1,
+        s.studentName || 'Student',
+        s.registerNumber || '-',
+        s.department || '-',
+        s.studentUsername || '-',
+        `Day ${s.day}`,
+        `${s.score}/${s.total}`,
+        `${s.percentage}%`,
+        s.status || (s.percentage >= 50 ? 'Passed' : 'Completed'),
+        s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '-'
+      ]);
+
+      doc.autoTable({
+        head: tableHead,
+        body: tableRows,
+        startY: 80,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 6,
+          font: 'helvetica',
+          textColor: [33, 37, 41]
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 30, halign: 'center' },
+          5: { cellWidth: 50, halign: 'center' },
+          6: { cellWidth: 55, halign: 'center' },
+          7: { cellWidth: 65, halign: 'center' },
+          8: { cellWidth: 65, halign: 'center' },
+        },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 8) {
+            if (data.cell.raw === 'Passed') {
+              data.cell.styles.textColor = [22, 163, 74];
+              data.cell.styles.fontStyle = 'bold';
+            } else {
+              data.cell.styles.textColor = [220, 38, 38];
+            }
+          }
+        }
+      });
+
+      let pdfFilename = 'Placement_Assessment_Reports';
+      if (dayQuery) pdfFilename += `_Day_${dayQuery}`;
+      if (studentQuery) pdfFilename += `_${studentQuery.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      pdfFilename += `_${Date.now()}.pdf`;
+
+      doc.save(pdfFilename);
+    }
+
+    // Comprehensive Multi-Student Master Dossier Export (All Questions, Options, Answers & Code)
+    async function exportAllDetailsPDF() {
+      const list = currentFilteredSubmissions.length > 0 ? currentFilteredSubmissions : allSubmissions;
+      if (!list || list.length === 0) {
+        alert('No submission records found to export.');
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF generator library is still loading. Please try again.');
+        return;
+      }
+
+      const dayQuery = document.getElementById('filterDay') ? document.getElementById('filterDay').value : '';
+      const studentQuery = document.getElementById('filterStudent') ? document.getElementById('filterStudent').value.trim() : '';
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('portrait', 'pt', 'a4');
+
+      // Title Banner
+      doc.setFillColor(37, 99, 235);
+      doc.rect(0, 0, 595, 50, 'F');
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.text('JAVA PLACEMENT ASSESSMENT PLATFORM', 40, 32);
+
+      doc.setFontSize(13);
+      doc.setTextColor(26, 43, 76);
+      doc.setFont('helvetica', 'bold');
+      const nowStr = new Date().toLocaleString();
+      let dossierTitle = 'Master Batch Assessment Dossier (All Student Responses & Code)';
+      if (dayQuery) {
+        dossierTitle = `Day ${dayQuery} Assessment Dossier (All Questions, Options & Code)`;
+      }
+      doc.text(dossierTitle, 40, 75);
+
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont('helvetica', 'normal');
+      let filterSummary = `Generated on: ${nowStr} | Total Candidates: ${list.length}`;
+      if (dayQuery) filterSummary += ` | Assessment: Day ${dayQuery}`;
+      if (studentQuery) filterSummary += ` | Filter: "${studentQuery}"`;
+      doc.text(filterSummary, 40, 92);
+
+      // Fetch all full submissions in parallel if needed
+      let fullSubmissions = [];
+      for (let i = 0; i < list.length; i++) {
+        const s = list[i];
+        if (s.answerSheet && s.answerSheet.length > 0) {
+          fullSubmissions.push(s);
+        } else {
+          try {
+            const res = await API.getSubmission(s._id || s.id);
+            if (res.success && res.submission) {
+              fullSubmissions.push(res.submission);
+            } else {
+              fullSubmissions.push(s);
+            }
+          } catch (e) {
+            fullSubmissions.push(s);
+          }
+        }
+      }
+
+      let startY = 110;
+
+      fullSubmissions.forEach((sub, sIdx) => {
+        if (sIdx > 0) {
+          doc.addPage();
+          startY = 40;
+        }
+
+        const isPassed = sub.percentage >= 50;
+        
+        // Candidate Header Banner Box
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(40, startY, 515, 52, 4, 4, 'F');
+
+        doc.setFontSize(11);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${sIdx + 1}. ${sub.studentName} (${sub.studentUsername}) — Day ${sub.day} Assessment`, 50, startY + 18);
+
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(71, 85, 105);
+        doc.text(`Reg No: ${sub.registerNumber || 'N/A'} | Dept: ${sub.department || 'N/A'} | Batch: ${sub.studentYear || 'Final Year'}`, 50, startY + 32);
+        
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Score: ${sub.score}/${sub.total} (${sub.percentage}%) | Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')} | Submitted: ${new Date(sub.submittedAt).toLocaleString()}`, 50, startY + 45);
+
+        // Questions Breakdown Table
+        const tableHead = [['#', 'Type', 'Question & Options', 'Student Response / Java Code', 'Evaluation & Answer Key', 'Score']];
+        const sheet = sub.answerSheet || [];
+
+        const tableRows = sheet.map((item, qIdx) => {
+          const type = String(item.questionType || 'MCQ').toUpperCase();
+          const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
+          
+          let qContent = `${item.question || 'Question'}\n`;
+          if (item.optionA || item.optionB || item.optionC || item.optionD) {
+            qContent += `\nA) ${item.optionA || '-'}\nB) ${item.optionB || '-'}\nC) ${item.optionC || '-'}\nD) ${item.optionD || '-'}`;
+          }
+
+          let ansContent = '';
+          if (type === 'CODING') {
+            ansContent = `--- Submitted Java Code ---\n${item.studentAnswer || 'No code submitted'}`;
+          } else {
+            ansContent = `Student Answer:\n${item.studentAnswer || 'Not Answered'}`;
+          }
+
+          let evalContent = '';
+          if (type === 'CODING') {
+            evalContent = `Criteria:\n${item.correctAnswer || 'Algorithmic Java Implementation'}\n\nNotes: ${item.evaluationNotes || 'Evaluated by compiler engine'}`;
+          } else {
+            evalContent = `Correct Key:\n${item.correctAnswer || '-'}`;
+          }
+
+          return [
+            qIdx + 1,
+            type,
+            qContent,
+            ansContent,
+            evalContent,
+            `${status}\n(${item.score || 0} pt)`
+          ];
+        });
+
+        doc.autoTable({
+          head: tableHead,
+          body: tableRows,
+          startY: startY + 62,
+          theme: 'grid',
+          styles: {
+            fontSize: 8,
+            cellPadding: 5,
+            valign: 'top',
+            font: 'helvetica',
+            textColor: [33, 37, 41],
+            overflow: 'linebreak'
+          },
+          headStyles: {
+            fillColor: [37, 99, 235],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            halign: 'center'
+          },
+          alternateRowStyles: {
+            fillColor: [248, 250, 252]
+          },
+          columnStyles: {
+            0: { cellWidth: 20, halign: 'center' },
+            1: { cellWidth: 50, halign: 'center', fontStyle: 'bold' },
+            2: { cellWidth: 160 },
+            3: { cellWidth: 145 },
+            4: { cellWidth: 100 },
+            5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
+          },
+          didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 5) {
+              if (String(data.cell.raw).startsWith('Correct')) {
+                data.cell.styles.textColor = [22, 163, 74];
+              } else if (String(data.cell.raw).startsWith('Partial')) {
+                data.cell.styles.textColor = [234, 88, 12];
+              } else {
+                data.cell.styles.textColor = [220, 38, 38];
+              }
+            }
+          },
+          margin: { left: 40, right: 40, bottom: 40 }
+        });
+      });
+
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= pageCount; p++) {
+        doc.setPage(p);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(
+          `Java Placement Assessment Portal — Master Dossier | Page ${p} of ${pageCount}`,
+          40,
+          825
+        );
+      }
+
+      let allDetailsFilename = 'Java_Placement';
+      if (dayQuery) allDetailsFilename += `_Day_${dayQuery}`;
+      if (studentQuery) allDetailsFilename += `_${studentQuery.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      allDetailsFilename += `_Detailed_Reports_${Date.now()}.pdf`;
+
+      doc.save(allDetailsFilename);
+    }
+
+    // Comprehensive Single Student PDF Report Export (Includes Questions, Options, Answers, Coding)
+    function exportSingleStudentPDF() {
+      if (!currentInspectedSubmission) {
+        alert('No student submission is currently selected.');
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF generator library is still loading. Please try again.');
+        return;
+      }
+
+      const sub = currentInspectedSubmission;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('portrait', 'pt', 'a4');
+
+      // Top Title Banner
+      doc.setFillColor(37, 99, 235);
+      doc.rect(0, 0, 595, 50, 'F');
+
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.text('JAVA PLACEMENT ASSESSMENT PLATFORM', 40, 32);
+
+      // Subtitle
+      doc.setFontSize(13);
+      doc.setTextColor(26, 43, 76);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Official Student Assessment Report — Day ${sub.day}`, 40, 75);
+
+      // Student Profile Info Table
+      const isPassed = (sub.percentage >= 50);
+      const profileData = [
+        [
+          { content: `Student Name: ${sub.studentName}`, styles: { fontStyle: 'bold' } },
+          { content: `Register No: ${sub.registerNumber || 'N/A'}` },
+          { content: `Username: ${sub.studentUsername}` }
+        ],
+        [
+          { content: `Department: ${sub.department || 'N/A'}` },
+          { content: `Academic Year: ${sub.studentYear || 'Final Year'}` },
+          { content: `Submitted: ${new Date(sub.submittedAt).toLocaleString()}` }
+        ],
+        [
+          { content: `Score: ${sub.score} / ${sub.total}`, styles: { fontStyle: 'bold' } },
+          { content: `Percentage: ${sub.percentage}%`, styles: { fontStyle: 'bold' } },
+          { 
+            content: `Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')}`,
+            styles: { 
+              fontStyle: 'bold', 
+              textColor: isPassed ? [22, 163, 74] : [220, 38, 38] 
+            } 
+          }
+        ]
+      ];
+
+      doc.autoTable({
+        body: profileData,
+        startY: 88,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          textColor: [51, 65, 85]
+        },
+        margin: { left: 40, right: 40 }
+      });
+
+      // Questions Breakdown Table with Full Options, Student Answer, Correct Answer, and Coding Code
+      const tableHead = [['#', 'Type', 'Question & Options', 'Student Response / Java Code', 'Evaluation & Answer Key', 'Score']];
+      const sheet = sub.answerSheet || [];
+
+      const tableRows = sheet.map((item, idx) => {
+        const type = String(item.questionType || 'MCQ').toUpperCase();
+        const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
+        
+        // Build Question + Options string
+        let qContent = `${item.question || 'Question'}\n`;
+        if (item.optionA || item.optionB || item.optionC || item.optionD) {
+          qContent += `\nA) ${item.optionA || '-'}\nB) ${item.optionB || '-'}\nC) ${item.optionC || '-'}\nD) ${item.optionD || '-'}`;
+        }
+
+        // Build Student Answer string
+        let ansContent = '';
+        if (type === 'CODING') {
+          ansContent = `--- Submitted Java Code ---\n${item.studentAnswer || 'No code submitted'}`;
+        } else {
+          ansContent = `Student Answer:\n${item.studentAnswer || 'Not Answered'}`;
+        }
+
+        // Build Key / Feedback string
+        let evalContent = '';
+        if (type === 'CODING') {
+          evalContent = `Criteria:\n${item.correctAnswer || 'Algorithmic Java Implementation'}\n\nNotes: ${item.evaluationNotes || 'Evaluated by compiler engine'}`;
+        } else {
+          evalContent = `Correct Key:\n${item.correctAnswer || '-'}`;
+        }
+
+        return [
+          idx + 1,
+          type,
+          qContent,
+          ansContent,
+          evalContent,
+          `${status}\n(${item.score || 0} pt)`
+        ];
+      });
+
+      const startTableY = doc.lastAutoTable.finalY + 15;
+
+      doc.autoTable({
+        head: tableHead,
+        body: tableRows,
+        startY: startTableY,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 6,
+          valign: 'top',
+          font: 'helvetica',
+          textColor: [33, 37, 41],
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 20, halign: 'center' },
+          1: { cellWidth: 50, halign: 'center', fontStyle: 'bold' },
+          2: { cellWidth: 160 },
+          3: { cellWidth: 145 },
+          4: { cellWidth: 100 },
+          5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
+        },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 5) {
+            if (String(data.cell.raw).startsWith('Correct')) {
+              data.cell.styles.textColor = [22, 163, 74];
+            } else if (String(data.cell.raw).startsWith('Partial')) {
+              data.cell.styles.textColor = [234, 88, 12];
+            } else {
+              data.cell.styles.textColor = [220, 38, 38];
+            }
+          }
+        },
+        margin: { left: 40, right: 40, bottom: 40 }
+      });
+
+      // Add page numbers on all pages
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= pageCount; p++) {
+        doc.setPage(p);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(
+          `Java Placement Assessment Portal | Student: ${sub.studentName} (${sub.studentUsername}) | Page ${p} of ${pageCount}`,
+          40,
+          825
+        );
+      }
+
+      doc.save(`${sub.studentUsername}_Day_${sub.day}_Detailed_Assessment_Report.pdf`);
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('inspectModal');
+      if (event.target === modal) closeInspectModal();
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      populateDayFilter();
+      populateStudentDropdown();
+      loadReports();
+
+      // Listen for cross-tab portal events (e.g. Student submits assessment, Admin deletes submission)
+      PortalEvents.listen((event) => {
+        if (event.type === 'SUBMISSION_CREATED' || event.type === 'SUBMISSION_DELETED') {
+          loadReports();
+        } else if (event.type === 'STUDENT_UPDATED') {
+          populateStudentDropdown();
+          loadReports();
+        }
+      });
+
+      // Window focus auto-sync
+      window.addEventListener('focus', () => {
+        loadReports();
+      });
+
+      // Heartbeat auto-sync every 4 seconds
+      setInterval(() => {
+        loadReports();
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

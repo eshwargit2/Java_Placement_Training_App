@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessment Result — Java Placement Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    .distinction-celebrate-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #8b5cf6 100%);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 13.5px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.45);
+      animation: pulseDistinction 2s infinite ease-in-out;
+      margin-top: 8px;
+    }
+    @keyframes pulseDistinction {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.04); filter: brightness(1.15); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">JP</div>
+        <div>
+          <div class="brand-title">Assessment Results</div>
+          <div class="brand-subtitle">Evaluation & detailed answer sheet</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button type="button" class="btn-secondary" onclick="window.location.href='student.html'">Student Workspace</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">All Reports</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- RESULT SUMMARY CARD -->
+    <section class="card result-banner-card">
+      <div class="result-banner-header">
+        <div>
+          <span class="day-badge" id="resultDayBadge">Day 1 Assessment</span>
+          <h1 id="resultStudentName">Student Result</h1>
+          <p id="resultMeta">Batch: <span id="resultYear">Final Year</span> | ID: <span id="resultUsername">--</span> | Submitted: <span id="resultDate">--</span></p>
+        </div>
+        <div class="score-circle-wrap">
+          <div class="score-circle" id="percentageCircle">
+            <span class="score-percent" id="scorePercent">0%</span>
+            <span class="score-label" id="scoreStatus">Pending</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-stats-grid">
+        <div class="stat-mini-box">
+          <span class="mini-label">Total Questions</span>
+          <h3 id="statTotalQ">0</h3>
+        </div>
+        <div class="stat-mini-box">
+          <span class="mini-label">Score Secured</span>
+          <h3 id="statSecuredScore">0</h3>
+        </div>
+        <div class="stat-mini-box">
+          <span class="mini-label">Passing Benchmark</span>
+          <h3 id="passBenchmark">50%</h3>
+        </div>
+        <div class="stat-mini-box">
+          <span class="mini-label">Overall Status</span>
+          <h3 id="statPassBadge" class="text-success">Passed</h3>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT DAY PROGRESSION CARD -->
+    <section class="card" id="nextDayCard" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1px solid #334155; margin-bottom: 24px; padding: 22px 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="flex: 1; min-width: 260px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <span class="day-badge" style="background: #16a34a; color: #ffffff; font-weight: 600;">✅ Day <span id="completedDayNum">1</span> Finished</span>
+            <span class="day-badge" style="background: #2563eb; color: #ffffff; font-weight: 600;">🚀 Day <span id="nextDayNum">2</span> Unlocked</span>
+          </div>
+          <h2 style="color: #ffffff; margin: 0 0 6px 0; font-size: 20px;" id="nextDayTitle">Ready for Day 2 Assessment?</h2>
+          <p style="color: #94a3b8; margin: 0; font-size: 13.5px;">Your test submission has been recorded in MongoDB. You can launch your next day's assessment immediately or return to your student workspace.</p>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <button type="button" class="btn-secondary" onclick="window.location.href='student.html'" style="background: #334155; color: #ffffff; border-color: #475569;">
+            ⬅ Student Workspace
+          </button>
+          <button type="button" id="nextDayLaunchBtn" class="btn-primary" onclick="proceedToNextDay()" style="font-size: 15px; padding: 10px 22px; font-weight: 600; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+            🚀 Start Day <span id="btnNextDayNum">2</span> Assessment
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANSWER SHEET SECTION -->
+    <section class="card">
+      <div class="section-heading-row">
+        <div>
+          <h2>📝 Detailed Answer Breakdown</h2>
+          <p>Review questions, options, submitted code, and automated evaluations</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-primary btn-sm" onclick="downloadResultPDF()">📄 Download PDF Report</button>
+          <button type="button" class="btn-secondary btn-sm" onclick="window.print()">Print</button>
+        </div>
+      </div>
+
+      <div id="answerSheetContainer" class="answer-sheet-list">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    let currentResultData = null;
+
+    async function loadResult() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const submissionId = urlParams.get('id') || localStorage.getItem('currentSubmissionId');
+
+      if (!submissionId) {
+        document.getElementById('answerSheetContainer').innerHTML = `
+          <div class="empty-state">
+            <p>No recent submission selected.</p>
+            <button type="button" class="btn-primary" onclick="window.location.href='student.html'">Return to Dashboard</button>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const res = await API.getSubmission(submissionId);
+        if (res.success && res.submission) {
+          currentResultData = res.submission;
+          renderSubmission(res.submission);
+        } else {
+          document.getElementById('answerSheetContainer').innerHTML = `<p class="error-msg">Submission not found in MongoDB.</p>`;
+        }
+      } catch (err) {
+        document.getElementById('answerSheetContainer').innerHTML = `<p class="error-msg">Error loading result from MongoDB.</p>`;
+      }
+    }
+
+    function renderSubmission(sub) {
+      const currentDay = Number(sub.day) || 1;
+      const nextDay = currentDay < 41 ? currentDay + 1 : 41;
+
+      document.getElementById('resultDayBadge').textContent = `Day ${currentDay} Assessment`;
+      document.getElementById('resultStudentName').textContent = `${sub.studentName}'s Assessment Result`;
+      document.getElementById('resultYear').textContent = sub.studentYear || 'Final Year';
+      document.getElementById('resultUsername').textContent = sub.studentUsername;
+      document.getElementById('resultDate').textContent = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Recent';
+
+      document.getElementById('scorePercent').textContent = `${sub.percentage}%`;
+      document.getElementById('scoreStatus').textContent = sub.status || (sub.percentage >= 50 ? 'Passed' : 'Completed');
+
+      const circle = document.getElementById('percentageCircle');
+      if (sub.percentage >= 50) {
+        circle.classList.add('circle-pass');
+        document.getElementById('statPassBadge').textContent = 'Passed';
+        document.getElementById('statPassBadge').className = 'text-success';
+      } else {
+        circle.classList.add('circle-fail');
+        document.getElementById('statPassBadge').textContent = 'Needs Revision';
+        document.getElementById('statPassBadge').className = 'text-danger';
+      }
+
+      // Check if student scored above 70% / 70 marks -> Launch Top-to-Bottom Confetti Flow
+      const isAbove70 = (Number(sub.percentage) >= 70 || Number(sub.score) >= 70);
+      const existingBadge = document.getElementById('distinctionCelebrateBadge');
+      if (existingBadge) existingBadge.remove();
+
+      if (isAbove70) {
+        const metaBox = document.getElementById('resultMeta');
+        if (metaBox) {
+          const badge = document.createElement('div');
+          badge.id = 'distinctionCelebrateBadge';
+          badge.className = 'distinction-celebrate-badge';
+          badge.innerHTML = '🎉 Outstanding Distinction! Scored Above 70% 🏆';
+          metaBox.insertAdjacentElement('afterend', badge);
+        }
+        // Launch top to bottom confetti shower
+        setTimeout(() => {
+          triggerTopToBottomConfetti();
+        }, 300);
+      }
+
+      document.getElementById('statTotalQ').textContent = sub.total;
+      document.getElementById('statSecuredScore').textContent = `${sub.score} / ${sub.total}`;
+
+      // Next Day Advancement setup
+      const completedDayEl = document.getElementById('completedDayNum');
+      const nextDayNumEl = document.getElementById('nextDayNum');
+      const btnNextDayNum = document.getElementById('btnNextDayNum');
+      const nextDayTitle = document.getElementById('nextDayTitle');
+      const nextDayCard = document.getElementById('nextDayCard');
+
+      if (completedDayEl) completedDayEl.textContent = currentDay;
+      if (nextDayNumEl) nextDayNumEl.textContent = nextDay;
+      if (btnNextDayNum) btnNextDayNum.textContent = nextDay;
+
+      if (currentDay < 41) {
+        if (nextDayTitle) nextDayTitle.textContent = `Ready for Day ${nextDay} Assessment?`;
+        if (nextDayCard) nextDayCard.style.display = 'block';
+      } else {
+        if (nextDayTitle) nextDayTitle.textContent = `🎉 Congratulations! You have completed all 41 Days of Assessment!`;
+        const btn = document.getElementById('nextDayLaunchBtn');
+        if (btn) btn.style.display = 'none';
+      }
+
+      // Update local storage active day
+      localStorage.setItem('assignedDay', String(nextDay));
+      localStorage.setItem('assessmentDay', String(nextDay));
+
+      document.getElementById('statTotalQ').textContent = sub.total;
+      document.getElementById('statSecuredScore').textContent = `${sub.score} / ${sub.total}`;
+
+      const container = document.getElementById('answerSheetContainer');
+      container.innerHTML = '';
+
+      const sheet = sub.answerSheet || [];
+      if (sheet.length === 0) {
+        container.innerHTML = '<p class="empty-state">No answer details recorded.</p>';
+        return;
+      }
+
+      sheet.forEach((item, idx) => {
+        const card = document.createElement('div');
+        const type = String(item.questionType || 'MCQ').toUpperCase();
+        const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
+        const isCorrect = status === 'Correct';
+        const isPartial = status === 'Partial';
+
+        let statusClass = 'status-wrong';
+        if (isCorrect) statusClass = 'status-correct';
+        else if (isPartial) statusClass = 'status-partial';
+
+        card.className = `answer-card ${statusClass}`;
+
+        let optionsHtml = '';
+        if (item.optionA || item.optionB || item.optionC || item.optionD) {
+          optionsHtml = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; background: #f8fafc; padding: 8px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e2e8f0;">
+              <div><b>A:</b> ${escapeHTML(item.optionA || '-')}</div>
+              <div><b>B:</b> ${escapeHTML(item.optionB || '-')}</div>
+              <div><b>C:</b> ${escapeHTML(item.optionC || '-')}</div>
+              <div><b>D:</b> ${escapeHTML(item.optionD || '-')}</div>
+            </div>
+          `;
+        }
+
+        let codeSection = '';
+        if (type === 'CODING') {
+          codeSection = `
+            <div class="code-review-wrap">
+              <span class="code-review-label">Your Submitted Code:</span>
+              <pre class="code-block"><code>${escapeHTML(item.studentAnswer || 'No code provided')}</code></pre>
+            </div>
+            ${item.evaluationNotes ? `<div class="eval-notes"><b>Evaluation Details:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
+          `;
+        } else {
+          codeSection = `
+            ${optionsHtml}
+            <div class="answer-row">
+              <div><b>Your Answer:</b> <span class="ans-val">${escapeHTML(item.studentAnswer || 'Not Answered')}</span></div>
+              <div><b>Correct Answer / Key:</b> <span class="ans-key">${escapeHTML(item.correctAnswer || '')}</span></div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="answer-card-header">
+            <div class="q-meta">
+              <span class="badge-type badge-${type.toLowerCase()}">${type}</span>
+              <span class="q-idx">Question ${idx + 1}</span>
+            </div>
+            <div class="status-indicator ${statusClass}">
+              <span>${status} (${item.score || 0} pt)</span>
+            </div>
+          </div>
+          <h4 class="answer-q-title">${escapeHTML(item.question)}</h4>
+          ${codeSection}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function proceedToNextDay() {
+      if (!currentResultData) return;
+      const currentDay = Number(currentResultData.day) || 1;
+      const nextDay = currentDay < 41 ? currentDay + 1 : 41;
+      localStorage.setItem('assessmentDay', String(nextDay));
+      localStorage.setItem('assignedDay', String(nextDay));
+      window.location.href = 'assessment.html';
+    }
+
+    // Top-to-Bottom Flowing Confetti Celebration Engine
+    function triggerTopToBottomConfetti() {
+      // 1. If external canvas-confetti library is loaded, run high-density top-to-bottom stream
+      if (typeof confetti === 'function') {
+        const duration = 4500;
+        const animationEnd = Date.now() + duration;
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          // Top shower flow
+          confetti({
+            particleCount: 12,
+            angle: 90,
+            spread: 160,
+            startVelocity: -20,
+            gravity: 1.2,
+            drift: (Math.random() - 0.5) * 1.5,
+            ticks: 300,
+            origin: { x: Math.random(), y: -0.05 },
+            colors: ['#ffd700', '#22c55e', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4', '#f97316'],
+            shapes: ['square', 'circle'],
+            scalar: Math.random() * 0.6 + 0.8
+          });
+
+          // Top left and top right angled showers
+          confetti({
+            particleCount: 6,
+            angle: 280,
+            spread: 60,
+            startVelocity: 15,
+            gravity: 1.0,
+            origin: { x: 0.1, y: 0 },
+            colors: ['#ffd700', '#22c55e', '#3b82f6', '#ec4899']
+          });
+          confetti({
+            particleCount: 6,
+            angle: 260,
+            spread: 60,
+            startVelocity: 15,
+            gravity: 1.0,
+            origin: { x: 0.9, y: 0 },
+            colors: ['#ffd700', '#22c55e', '#3b82f6', '#ec4899']
+          });
+        }, 120);
+      }
+
+      // 2. Also run custom HTML5 canvas top-to-bottom falling ribbons
+      renderCustomFallingConfetti();
+    }
+
+    function renderCustomFallingConfetti() {
+      const existing = document.getElementById('fallingConfettiCanvas');
+      if (existing) existing.remove();
+
+      const canvas = document.createElement('canvas');
+      canvas.id = 'fallingConfettiCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '999999';
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#06b6d4', '#eab308', '#ef4444'];
+      const particles = [];
+      const particleCount = 140;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * -height,
+          size: Math.random() * 8 + 6,
+          speedY: Math.random() * 3 + 2.5,
+          speedX: Math.random() * 2 - 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: Math.random() * 6 - 3,
+          tilt: Math.random() * 10 - 5,
+          tiltSpeed: Math.random() * 0.08 + 0.04
+        });
+      }
+
+      let animationFrame;
+      let startTime = Date.now();
+
+      function update() {
+        ctx.clearRect(0, 0, width, height);
+        const elapsed = Date.now() - startTime;
+
+        particles.forEach(p => {
+          p.y += p.speedY;
+          p.x += Math.sin(p.y * 0.02) + p.speedX;
+          p.rotation += p.rotationSpeed;
+          p.tilt = Math.sin(p.y * p.tiltSpeed) * 12;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.rect(-p.size / 2, -p.size / 4, p.size, p.size / 2 + p.tilt);
+          ctx.fill();
+          ctx.restore();
+
+          // Respawn at top if still in early duration
+          if (p.y > height + 20 && elapsed < 4000) {
+            p.y = -20;
+            p.x = Math.random() * width;
+          }
+        });
+
+        if (elapsed < 5500) {
+          animationFrame = requestAnimationFrame(update);
+        } else {
+          canvas.remove();
+        }
+      }
+
+      animationFrame = requestAnimationFrame(update);
+
+      window.addEventListener('resize', () => {
+        if (canvas) {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+      }, { once: true });
+    }
+
+    function downloadResultPDF() {
+      if (!currentResultData) {
+        alert('No result data available to generate PDF.');
+        return;
+      }
+
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF generator library is still loading. Please try again.');
+        return;
+      }
+
+      const sub = currentResultData;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('portrait', 'pt', 'a4');
+
+      // Top Title Banner
+      doc.setFillColor(37, 99, 235);
+      doc.rect(0, 0, 595, 50, 'F');
+
+      doc.setFontSize(16);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.text('JAVA PLACEMENT ASSESSMENT PLATFORM', 40, 32);
+
+      // Subtitle
+      doc.setFontSize(13);
+      doc.setTextColor(26, 43, 76);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Official Assessment Result — Day ${sub.day}`, 40, 75);
+
+      // Student Profile Info Table
+      const isPassed = (sub.percentage >= 50);
+      const profileData = [
+        [
+          { content: `Student Name: ${sub.studentName}`, styles: { fontStyle: 'bold' } },
+          { content: `Register No: ${sub.registerNumber || 'N/A'}` },
+          { content: `Username: ${sub.studentUsername}` }
+        ],
+        [
+          { content: `Department: ${sub.department || 'N/A'}` },
+          { content: `Academic Year: ${sub.studentYear || 'Final Year'}` },
+          { content: `Submitted: ${new Date(sub.submittedAt).toLocaleString()}` }
+        ],
+        [
+          { content: `Score: ${sub.score} / ${sub.total}`, styles: { fontStyle: 'bold' } },
+          { content: `Percentage: ${sub.percentage}%`, styles: { fontStyle: 'bold' } },
+          { 
+            content: `Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')}`,
+            styles: { 
+              fontStyle: 'bold', 
+              textColor: isPassed ? [22, 163, 74] : [220, 38, 38] 
+            } 
+          }
+        ]
+      ];
+
+      doc.autoTable({
+        body: profileData,
+        startY: 88,
+        theme: 'plain',
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          textColor: [51, 65, 85]
+        },
+        margin: { left: 40, right: 40 }
+      });
+
+      // Questions Breakdown Table
+      const tableHead = [['#', 'Type', 'Question & Options', 'Student Response / Java Code', 'Evaluation & Answer Key', 'Score']];
+      const sheet = sub.answerSheet || [];
+
+      const tableRows = sheet.map((item, idx) => {
+        const type = String(item.questionType || 'MCQ').toUpperCase();
+        const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
+        
+        let qContent = `${item.question || 'Question'}\n`;
+        if (item.optionA || item.optionB || item.optionC || item.optionD) {
+          qContent += `\nA) ${item.optionA || '-'}\nB) ${item.optionB || '-'}\nC) ${item.optionC || '-'}\nD) ${item.optionD || '-'}`;
+        }
+
+        let ansContent = '';
+        if (type === 'CODING') {
+          ansContent = `--- Submitted Java Code ---\n${item.studentAnswer || 'No code submitted'}`;
+        } else {
+          ansContent = `Student Answer:\n${item.studentAnswer || 'Not Answered'}`;
+        }
+
+        let evalContent = '';
+        if (type === 'CODING') {
+          evalContent = `Criteria:\n${item.correctAnswer || 'Algorithmic Java Implementation'}\n\nNotes: ${item.evaluationNotes || 'Evaluated by compiler engine'}`;
+        } else {
+          evalContent = `Correct Key:\n${item.correctAnswer || '-'}`;
+        }
+
+        return [
+          idx + 1,
+          type,
+          qContent,
+          ansContent,
+          evalContent,
+          `${status}\n(${item.score || 0} pt)`
+        ];
+      });
+
+      const startTableY = doc.lastAutoTable.finalY + 15;
+
+      doc.autoTable({
+        head: tableHead,
+        body: tableRows,
+        startY: startTableY,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 6,
+          valign: 'top',
+          font: 'helvetica',
+          textColor: [33, 37, 41],
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        columnStyles: {
+          0: { cellWidth: 20, halign: 'center' },
+          1: { cellWidth: 50, halign: 'center', fontStyle: 'bold' },
+          2: { cellWidth: 160 },
+          3: { cellWidth: 145 },
+          4: { cellWidth: 100 },
+          5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
+        },
+        didParseCell: function(data) {
+          if (data.section === 'body' && data.column.index === 5) {
+            if (String(data.cell.raw).startsWith('Correct')) {
+              data.cell.styles.textColor = [22, 163, 74];
+            } else if (String(data.cell.raw).startsWith('Partial')) {
+              data.cell.styles.textColor = [234, 88, 12];
+            } else {
+              data.cell.styles.textColor = [220, 38, 38];
+            }
+          }
+        },
+        margin: { left: 40, right: 40, bottom: 40 }
+      });
+
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= pageCount; p++) {
+        doc.setPage(p);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(
+          `Java Placement Assessment Portal | Student: ${sub.studentName} (${sub.studentUsername}) | Page ${p} of ${pageCount}`,
+          40,
+          825
+        );
+      }
+
+      doc.save(`${sub.studentUsername}_Day_${sub.day}_Detailed_Assessment_Report.pdf`);
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadResult);
+  </script>
+</body>
+</html>
