@@ -54,32 +54,34 @@ body {
   background-color: var(--bg-main);
   background-image:
     linear-gradient(180deg, rgba(238, 242, 246, 0.92) 0%, rgba(238, 242, 246, 0.97) 100%),
-    repeating-linear-gradient(
-      0deg,
+    repeating-linear-gradient(0deg,
       transparent,
       transparent 23px,
       rgba(27, 40, 56, 0.035) 23px,
-      rgba(27, 40, 56, 0.035) 24px
-    ),
-    repeating-linear-gradient(
-      90deg,
+      rgba(27, 40, 56, 0.035) 24px),
+    repeating-linear-gradient(90deg,
       transparent,
       transparent 23px,
       rgba(27, 40, 56, 0.035) 23px,
-      rgba(27, 40, 56, 0.035) 24px
-    );
+      rgba(27, 40, 56, 0.035) 24px);
   color: var(--text-main);
   line-height: 1.55;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, .brand-title {
+h1,
+h2,
+h3,
+.brand-title {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
 
-code, .code-textarea, .code-block, pre {
+code,
+.code-textarea,
+.code-block,
+pre {
   font-family: var(--font-mono);
 }
 
@@ -111,8 +113,13 @@ code, .code-textarea, .code-block, pre {
 }
 
 @keyframes gridDrift {
-  from { background-position: 0 0; }
-  to { background-position: 48px 48px; }
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 48px 48px;
+  }
 }
 
 .auth-container {
@@ -129,8 +136,15 @@ code, .code-textarea, .code-block, pre {
 }
 
 @keyframes authRise {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .auth-brand-panel {
@@ -422,8 +436,15 @@ code, .code-textarea, .code-block, pre {
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ================= CARDS ================= */
@@ -678,10 +699,25 @@ textarea:focus {
   letter-spacing: 0.02em;
 }
 
-.icon-blue { background: #e8f0f7; color: #1b4f72; }
-.icon-purple { background: #eef2f6; color: #2c3e50; }
-.icon-green { background: #eef8f1; color: #1e6b3a; }
-.icon-orange { background: #fff4e8; color: #c45d00; }
+.icon-blue {
+  background: #e8f0f7;
+  color: #1b4f72;
+}
+
+.icon-purple {
+  background: #eef2f6;
+  color: #2c3e50;
+}
+
+.icon-green {
+  background: #eef8f1;
+  color: #1e6b3a;
+}
+
+.icon-orange {
+  background: #fff4e8;
+  color: #c45d00;
+}
 
 .stat-label {
   display: block;
@@ -801,9 +837,17 @@ textarea:focus {
   font-weight: 600;
 }
 
-.status-msg.success { color: var(--success); }
-.status-msg.error { color: var(--danger); }
-.status-msg.info { color: var(--java-orange); }
+.status-msg.success {
+  color: var(--success);
+}
+
+.status-msg.error {
+  color: var(--danger);
+}
+
+.status-msg.info {
+  color: var(--java-orange);
+}
 
 /* ================= DAY CARDS GRID ================= */
 .day-cards-grid {
@@ -937,8 +981,13 @@ tbody tr:hover {
   background: var(--java-orange-soft);
 }
 
-.text-center { text-align: center; }
-.text-muted { color: var(--text-muted); }
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
 
 /* ================= BADGES ================= */
 .badge-count {
@@ -950,7 +999,8 @@ tbody tr:hover {
   font-family: var(--font-mono);
 }
 
-.badge-passed, .status-pass {
+.badge-passed,
+.status-pass {
   background: #eef8f1;
   color: #1e6b3a;
   font-weight: 700;
@@ -959,7 +1009,8 @@ tbody tr:hover {
   font-size: 12px;
 }
 
-.badge-failed, .status-fail {
+.badge-failed,
+.status-fail {
   background: #fdecea;
   color: #a93226;
   font-weight: 700;
@@ -978,9 +1029,20 @@ tbody tr:hover {
   font-family: var(--font-display);
 }
 
-.badge-mcq { background: #e8f0f7; color: #1b4f72; }
-.badge-error { background: #fdecea; color: #a93226; }
-.badge-coding { background: #fff4e8; color: #9a4d00; }
+.badge-mcq {
+  background: #e8f0f7;
+  color: #1b4f72;
+}
+
+.badge-error {
+  background: #fdecea;
+  color: #a93226;
+}
+
+.badge-coding {
+  background: #fff4e8;
+  color: #9a4d00;
+}
 
 .badge-dept {
   background: var(--java-navy);
@@ -1137,7 +1199,9 @@ tbody tr:hover {
   color: var(--java-navy);
 }
 
-.text-primary { color: var(--primary); }
+.text-primary {
+  color: var(--primary);
+}
 
 .highlight-card {
   background:
@@ -1164,8 +1228,17 @@ tbody tr:hover {
 }
 
 @keyframes glowPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
 }
 
 .day-badge-large {
@@ -1291,8 +1364,15 @@ tbody tr:hover {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .btn-submit-header {
@@ -1383,12 +1463,12 @@ tbody tr:hover {
   flex-shrink: 0;
 }
 
-.option-label input[type="radio"]:checked + .option-badge {
+.option-label input[type="radio"]:checked+.option-badge {
   background: var(--java-orange);
   color: #ffffff;
 }
 
-.option-label input[type="radio"]:checked ~ .option-text {
+.option-label input[type="radio"]:checked~.option-text {
   font-weight: 600;
   color: #a85a00;
 }
@@ -1405,7 +1485,9 @@ tbody tr:hover {
   padding: 16px;
 }
 
-.code-req, .code-io, .code-criteria {
+.code-req,
+.code-io,
+.code-criteria {
   font-size: 13px;
   margin-bottom: 10px;
   line-height: 1.5;
@@ -1538,9 +1620,17 @@ tbody tr:hover {
   background: #ffffff;
 }
 
-.status-correct { border-left: 4px solid var(--success); }
-.status-wrong { border-left: 4px solid var(--danger); }
-.status-partial { border-left: 4px solid var(--warning); }
+.status-correct {
+  border-left: 4px solid var(--success);
+}
+
+.status-wrong {
+  border-left: 4px solid var(--danger);
+}
+
+.status-partial {
+  border-left: 4px solid var(--warning);
+}
 
 .answer-card-header {
   display: flex;
@@ -1617,6 +1707,7 @@ tbody tr:hover {
 }
 
 @media (max-width: 850px) {
+
   .stats-grid,
   .profile-grid,
   .result-stats-grid,
@@ -1657,6 +1748,7 @@ tbody tr:hover {
     opacity: 0;
     transform: scale(0.92) translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1845,4 +1937,3 @@ tbody tr:hover {
   background: #f1f5f9;
   color: #334155;
 }
-

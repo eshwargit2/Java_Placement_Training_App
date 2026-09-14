@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Java Placement Assessment Portal - Student Workspace and assessment management.">
   <title>Student Workspace — Java Placement Portal</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
 
   <!-- TOP HEADER -->
@@ -41,8 +48,8 @@
               <span class="badge-dept" id="studentDeptBadge">--</span>
             </div>
             <p id="studentMeta" style="margin-top: 4px;">
-              Reg No: <b id="studentRegNo" style="color: var(--primary);">--</b> | 
-              Username: <code id="studentUsername">--</code> | 
+              Reg No: <b id="studentRegNo" style="color: var(--primary);">--</b> |
+              Username: <code id="studentUsername">--</code> |
               Batch: <span id="studentYear">--</span>
             </p>
           </div>
@@ -80,7 +87,8 @@
       <div class="highlight-content">
         <div class="day-badge-large" id="currentDayBadge">Day 1 Assessment</div>
         <h2 id="topicTitle">Java Placement Practice Assessment</h2>
-        <p>Complete your scheduled assessment with MCQs, error correction, and algorithmic Java coding. Scores are evaluated automatically.</p>
+        <p>Complete your scheduled assessment with MCQs, error correction, and algorithmic Java coding. Scores are
+          evaluated automatically.</p>
         <ul class="test-rules-list">
           <li><strong>Duration:</strong> 40-minute timed session</li>
           <li><strong>Format:</strong> MCQ · Error debugging · Live Java coding</li>
@@ -132,7 +140,8 @@
           <h2>👤 Student Profile Setup</h2>
           <p id="modalSubtext">Enter your details to save with your login ID in MongoDB</p>
         </div>
-        <button type="button" id="modalHeaderCloseBtn" class="modal-close" onclick="closeProfileModal()">&times;</button>
+        <button type="button" id="modalHeaderCloseBtn" class="modal-close"
+          onclick="closeProfileModal()">&times;</button>
       </div>
       <form id="profileForm" onsubmit="event.preventDefault(); handleSaveProfile();">
         <div class="modal-body">
@@ -152,8 +161,9 @@
               <option value="">-- Select Department --</option>
               <option value="Computer Science and Engineering (CSE)">Computer Science and Engineering (CSE)</option>
               <option value="Information Technology (IT)">Information Technology (IT)</option>
-              <option value="Artificial Intelligence & Data Science (AI&DS)">Artificial Intelligence & Data Science (AI&DS)</option>
-             
+              <option value="Artificial Intelligence & Data Science (AI&DS)">Artificial Intelligence & Data Science
+                (AI&DS)</option>
+
             </select>
           </div>
 
@@ -171,7 +181,8 @@
         </div>
         <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
           <button type="button" id="modalCancelBtn" class="btn-secondary" onclick="closeProfileModal()">Cancel</button>
-          <button type="submit" id="saveProfBtn" class="btn-primary" style="width: auto;">💾 Save Details to MongoDB</button>
+          <button type="submit" id="saveProfBtn" class="btn-primary" style="width: auto;">💾 Save Details to
+            MongoDB</button>
         </div>
       </form>
     </div>
@@ -189,7 +200,8 @@
 
       <div class="promo-body">
         <p style="font-size: 14px; color: #334155; line-height: 1.5; margin-bottom: 16px;">
-          Practice day-wise Python assessments, debugging challenges, coding problems, and mock tests customized for VMKVEC placement preparation.
+          Practice day-wise Python assessments, debugging challenges, coding problems, and mock tests customized for
+          VMKVEC placement preparation.
         </p>
 
         <div class="promo-features">
@@ -212,7 +224,8 @@
             <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase;">Portal URL</div>
             <div class="promo-link-text">vmkvec-cse-training.web.app</div>
           </div>
-          <a href="https://vmkvec-cse-training.web.app" target="_blank" rel="noopener noreferrer" class="btn-promo-visit-icon" title="Open Link">↗</a>
+          <a href="https://vmkvec-cse-training.web.app" target="_blank" rel="noopener noreferrer"
+            class="btn-promo-visit-icon" title="Open Link">↗</a>
         </div>
       </div>
 
@@ -314,7 +327,7 @@
         const isPlaceholderName = !currentStudent.profileCompleted && /^Student\s+\d+$/i.test(currentStudent.name);
         document.getElementById('profName').value = isPlaceholderName ? '' : (currentStudent.name || '');
         document.getElementById('profRegNo').value = currentStudent.registerNumber || '';
-        
+
         const deptSelect = document.getElementById('profDept');
         const deptVal = currentStudent.department || '';
         let found = false;
@@ -406,7 +419,7 @@
         const tr = document.createElement('tr');
         const dateStr = sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : 'Recent';
         const isPassed = sub.percentage >= 50;
-        
+
         tr.innerHTML = `
           <td><b>Day ${sub.day}</b></td>
           <td><b>${sub.score}</b> / ${sub.total}</td>
@@ -470,7 +483,7 @@
       }
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('profileModal');
       const promoModal = document.getElementById('pythonPromoModal');
       if (event.target === modal) {
@@ -520,4 +533,5 @@
     });
   </script>
 </body>
+
 </html>

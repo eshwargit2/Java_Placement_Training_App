@@ -1,15 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Java Placement Assessment Portal - Admin Console for batch performance monitoring and curriculum management.">
   <title>Admin Console — Java Placement Portal</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
 
   <!-- TOP HEADER -->
@@ -99,7 +106,8 @@
       </div>
 
       <div class="upload-zone" id="uploadZone">
-        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;" onchange="handleFileSelected(this)">
+        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display:none;"
+          onchange="handleFileSelected(this)">
         <div class="upload-content" onclick="document.getElementById('excelFile').click()">
           <div class="upload-icon">XLS</div>
           <h3>Choose Excel File</h3>
@@ -124,7 +132,8 @@
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
           <button type="button" class="btn-secondary btn-sm" onclick="loadDashboardData()">Refresh</button>
-          <button type="button" class="btn-danger btn-sm" onclick="handleDeleteAllQuestions()">Delete All Questions</button>
+          <button type="button" class="btn-danger btn-sm" onclick="handleDeleteAllQuestions()">Delete All
+            Questions</button>
         </div>
       </div>
 
@@ -219,7 +228,7 @@
 
     function handleFileSelected(input) {
       if (input.files && input.files[0]) {
-        document.getElementById('selectedFileName').innerHTML = `Selected: <b>${escapeHTML(input.files[0].name)}</b> (${Math.round(input.files[0].size/1024)} KB)`;
+        document.getElementById('selectedFileName').innerHTML = `Selected: <b>${escapeHTML(input.files[0].name)}</b> (${Math.round(input.files[0].size / 1024)} KB)`;
       }
     }
 
@@ -386,7 +395,7 @@
         .replace(/'/g, '&#039;');
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('questionModal');
       if (event.target === modal) closeQuestionModal();
     };
@@ -418,4 +427,5 @@
     });
   </script>
 </body>
+
 </html>

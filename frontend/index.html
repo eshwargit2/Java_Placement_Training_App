@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Java Placement Assessment Portal - Comprehensive 41-day placement training platform featuring MCQs, code debugging, and live coding assessments.">
   <title>Java Placement Portal — Sign In</title>
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
 </head>
+
 <body class="auth-body">
 
   <div class="auth-container">
@@ -22,14 +29,16 @@
           </div>
         </div>
         <h1>Train. Code. Get Placed.</h1>
-        <p class="brand-lead">A focused Java assessment workspace for 41-day placement training — MCQs, debugging, and live coding.</p>
+        <p class="brand-lead">A focused Java assessment workspace for 41-day placement training — MCQs, debugging, and
+          live coding.</p>
         <ul class="auth-feature-list">
           <li><span class="feat-dot"></span> Day-wise Java curriculum with automated evaluation</li>
           <li><span class="feat-dot"></span> Timed assessments with coding editors</li>
           <li><span class="feat-dot"></span> Instant scores and detailed answer sheets</li>
         </ul>
       </div>
-      <p style="font-size: 12px; opacity: 0.45; margin-top: 32px; font-family: var(--font-mono);">v1.0 · Java Placement Suite</p>
+      <p style="font-size: 12px; opacity: 0.45; margin-top: 32px; font-family: var(--font-mono);">v1.0 · Java Placement
+        Suite</p>
     </aside>
 
     <div class="auth-card">
@@ -40,10 +49,12 @@
       </div>
 
       <div class="login-mode-switch" role="tablist" aria-label="Login mode">
-        <button type="button" class="mode-btn active" id="modeStudentBtn" role="tab" aria-selected="true" onclick="setLoginMode('student')">
+        <button type="button" class="mode-btn active" id="modeStudentBtn" role="tab" aria-selected="true"
+          onclick="setLoginMode('student')">
           Student
         </button>
-        <button type="button" class="mode-btn" id="modeAdminBtn" role="tab" aria-selected="false" onclick="setLoginMode('admin')">
+        <button type="button" class="mode-btn" id="modeAdminBtn" role="tab" aria-selected="false"
+          onclick="setLoginMode('admin')">
           Admin
         </button>
       </div>
@@ -58,7 +69,8 @@
 
         <div class="form-field">
           <label for="password" id="passwordLabel">Student Password</label>
-          <input id="password" type="password" placeholder="Enter student password" autocomplete="current-password" required>
+          <input id="password" type="password" placeholder="Enter student password" autocomplete="current-password"
+            required>
         </div>
 
         <div id="loginAlert" class="alert-box" style="display:none;"></div>
@@ -77,4 +89,5 @@
   <script src="api.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
