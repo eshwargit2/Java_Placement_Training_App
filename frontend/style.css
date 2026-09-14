@@ -338,6 +338,146 @@ pre {
   font-size: 11px;
 }
 
+/* ================= MOBILE RESPONSIVE (LOGIN / AUTH) ================= */
+@media (max-width: 860px) {
+  .auth-body {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+    overflow-y: auto;
+    display: flex;
+  }
+
+  .auth-container {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    padding: 0;
+    margin: auto;
+  }
+
+  .auth-brand-panel {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 28px 24px 22px;
+  }
+
+  .auth-brand-mark {
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .auth-brand-panel h1 {
+    font-size: 24px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .auth-brand-panel .brand-lead {
+    font-size: 13.5px;
+    line-height: 1.5;
+    max-width: 100%;
+  }
+
+  .auth-feature-list {
+    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .auth-feature-list li {
+    font-size: 13px;
+  }
+
+  .auth-brand-panel p:last-child {
+    margin-top: 16px !important;
+  }
+
+  .auth-card {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    border-top: none;
+    padding: 28px 24px 24px;
+  }
+
+  .auth-header h1 {
+    font-size: 22px;
+  }
+
+  .auth-header p {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .login-mode-switch {
+    margin-bottom: 18px;
+  }
+
+  .mode-btn {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+
+  .auth-footer {
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-bottom: -24px;
+    padding: 14px 20px 18px;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    text-align: center;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-body {
+    padding: 14px 10px;
+  }
+
+  .auth-brand-panel {
+    padding: 20px 18px 16px;
+  }
+
+  .java-mark {
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  .auth-brand-panel h1 {
+    font-size: 20px;
+  }
+
+  .auth-brand-panel .brand-lead {
+    font-size: 12.5px;
+  }
+
+  .auth-feature-list {
+    display: none;
+  }
+
+  .auth-card {
+    padding: 22px 18px 20px;
+  }
+
+  .auth-header h1 {
+    font-size: 20px;
+  }
+
+  .auth-footer {
+    margin-left: -18px;
+    margin-right: -18px;
+    margin-bottom: -20px;
+    padding: 12px 14px 14px;
+    font-size: 11px;
+  }
+
+  .auth-footer p {
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}
+
 /* ================= TOP NAVIGATION ================= */
 .top-nav {
   position: sticky;
