@@ -2609,24 +2609,156 @@ pre.code-block {
   border-top: 1px solid #1e293b !important;
 }
 
-.modal-body .ide-console-header {
-  background: #070b13 !important;
-  border-bottom: 1px solid #131d2e !important;
-}
-
 .modal-body .ide-console-output {
   background: #05080f !important;
 }
 
-background:  #05080f !important;
-border-top: 1px solid #1e293b !important;
+/* User Filter Tabs & Status Badges */
+.filter-tab-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #d5dee8);
+  background: #ffffff;
+  color: var(--text-main, #1b2838);
+  font-family: var(--font-display, inherit);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
-.modal-body .ide-console-header {
-  background: #070b13 !important;
-  border-bottom: 1px solid #131d2e !important;
+.filter-tab-btn:hover {
+  background: #f8fafc;
+  border-color: var(--border-strong, #b8c5d4);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
 }
 
-.modal-body .ide-console-output {
-  background: #05080f !important;
+.filter-tab-btn.active {
+  background: var(--java-navy, #1b2838);
+  color: #ffffff;
+  border-color: var(--java-navy, #1b2838);
+  box-shadow: 0 3px 10px rgba(27, 40, 56, 0.28);
+}
+
+.filter-tab-btn.active[id="tabUsed"] {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: #047857;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(5, 150, 105, 0.32);
+}
+
+.filter-tab-btn.active[id="tabUnused"] {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  border-color: #334155;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(71, 85, 105, 0.25);
+}
+
+.badge-status-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-status-idle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-dot-pulse {
+  width: 7px;
+  height: 7px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: statusPulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+.status-dot-idle {
+  width: 6px;
+  height: 6px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@keyframes statusPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.user-avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e76f00 0%, #ff8c26 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(231, 111, 0, 0.25);
+}
+
+.user-avatar-sm.default-avatar {
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
+  box-shadow: none;
+}
+
+.student-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  padding: 3px 7px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.dept-select-filter {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border, #d5dee8);
+  font-size: 13.5px;
+  background: #ffffff;
+  color: var(--text-main, #1b2838);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.dept-select-filter:focus {
+  border-color: var(--java-orange, #e76f00);
 }

@@ -34,9 +34,14 @@
   <!-- ASSESSMENT TOP BAR -->
   <header class="assessment-header">
     <div class="assessment-header-inner">
-      <div class="test-student-info">
-        <h2 id="studentName">Student</h2>
-        <p>ID: <span id="studentUsername">--</span> | <span id="assessmentDayLabel">Day 1</span> Assessment</p>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <button type="button" class="btn-secondary btn-sm" onclick="showExitModal()" style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.25); padding: 6px 12px; font-weight: 600;">
+          ⬅ Exit
+        </button>
+        <div class="test-student-info">
+          <h2 id="studentName">Student</h2>
+          <p>ID: <span id="studentUsername">--</span> | <span id="assessmentDayLabel">Day 1</span> Assessment</p>
+        </div>
       </div>
 
       <div class="timer-badge" id="timerBadge">
@@ -607,8 +612,72 @@ public class Main {
         .replace(/'/g, '&#039;');
     }
 
+    // Modal popup control for Stop and Continue
+    function showExitModal() {
+      const modal = document.getElementById('exitConfirmModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function continueTest() {
+      const modal = document.getElementById('exitConfirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmExitTest() {
+      isSubmitting = true; // bypass confirmation handlers
+      clearInterval(timerInterval);
+      window.location.href = 'student.html';
+    }
+
+    // Refresh / Reload / Tab close protection
+    window.addEventListener('beforeunload', (event) => {
+      if (!isSubmitting) {
+        event.preventDefault();
+        event.returnValue = 'You have an active assessment in progress. Are you sure you want to leave?';
+        return event.returnValue;
+      }
+    });
+
+    // Browser Back button interception
+    history.pushState({ inAssessment: true }, '');
+    window.addEventListener('popstate', (event) => {
+      if (!isSubmitting) {
+        history.pushState({ inAssessment: true }, '');
+        showExitModal();
+      }
+    });
+
     window.addEventListener('DOMContentLoaded', loadQuestions);
   </script>
+
+  <!-- CONFIRMATION POPUP MODAL: STOP & CONTINUE -->
+  <div id="exitConfirmModal" class="modal" style="display:none; position: fixed; inset: 0; background: rgba(15, 25, 35, 0.78); z-index: 99999; backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div class="modal-dialog" style="max-width: 480px; width: 92%; background: #ffffff; border-radius: 14px; box-shadow: 0 20px 45px rgba(0,0,0,0.35); border: 1px solid #e2e8f0; overflow: hidden; padding: 0;">
+      <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); padding: 20px 24px; border-bottom: 1px solid #fed7aa; display: flex; align-items: center; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #ea580c; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);">⚠️</div>
+        <div>
+          <h3 style="margin: 0; font-size: 18px; color: #9a3412; font-family: var(--font-display, inherit); font-weight: 700;">Active Assessment in Progress</h3>
+          <p style="margin: 2px 0 0 0; font-size: 13px; color: #c2410c;">Your test timer is currently running</p>
+        </div>
+      </div>
+      
+      <div style="padding: 22px 24px; font-size: 14px; color: #334155; line-height: 1.6;">
+        <p style="margin: 0 0 12px 0; font-weight: 500;">Are you sure you want to leave or refresh? If you exit now, your current answers and timer progress will be lost.</p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #64748b;">
+          💡 Click <strong>Continue</strong> to keep solving questions, or click <strong>Stop</strong> to return to your student workspace.
+        </div>
+      </div>
+
+      <div style="padding: 16px 24px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn-secondary" onclick="confirmExitTest()" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; font-weight: 600; padding: 8px 16px;">
+          ⏹ Stop & Exit Test
+        </button>
+        <button type="button" class="btn-primary" onclick="continueTest()" style="background: #16a34a; font-weight: 700; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3); padding: 8px 18px;">
+          ▶ Continue Test
+        </button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

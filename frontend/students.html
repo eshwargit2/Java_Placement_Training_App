@@ -23,6 +23,163 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    .kpi-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--bg-card, #ffffff);
+      border: 1px solid var(--border, #d5dee8);
+      border-radius: var(--radius-md, 10px);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md, 0 4px 14px rgba(0,0,0,0.08));
+    }
+    .kpi-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .kpi-icon-blue { background: #e0f2fe; color: #0284c7; }
+    .kpi-icon-green { background: #dcfce7; color: #16a34a; }
+    .kpi-icon-amber { background: #fef3c7; color: #d97706; }
+    .kpi-icon-purple { background: #f3e8ff; color: #9333ea; }
+    .kpi-label {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .kpi-value {
+      font-family: var(--font-display, inherit);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--java-navy, #1b2838);
+      line-height: 1.2;
+    }
+    .badge-dept-cse { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .badge-dept-it { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-dept-aids { background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .badge-dept-ece { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    .badge-dept-other { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Compact table layout - fits all elements on screen without scroll */
+    .table-wrapper {
+      width: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid var(--border, #d5dee8);
+      border-radius: var(--radius-md, 10px);
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    }
+    .table-wrapper table {
+      width: 100%;
+      table-layout: auto;
+      border-collapse: collapse;
+    }
+    .table-wrapper th, .table-wrapper td {
+      padding: 7px 6px;
+      vertical-align: middle;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 11.5px;
+      line-height: 1.3;
+    }
+    .table-wrapper th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .user-avatar-sm {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .student-info-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .code-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 10.5px;
+      padding: 1px 5px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      color: #334155;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-dept {
+      padding: 1px 5px;
+      font-size: 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-status-active, .badge-status-idle {
+      padding: 2px 6px;
+      font-size: 10.5px;
+      white-space: nowrap;
+      border-radius: 9999px;
+    }
+    .select-inline {
+      padding: 2px 4px !important;
+      font-size: 11px !important;
+      border-radius: 4px !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    .badge-count {
+      padding: 1px 5px !important;
+      font-size: 10.5px !important;
+    }
+    .btn-delete {
+      background: #fee2e2 !important;
+      color: #b91c1c !important;
+      border: 1px solid #fca5a5 !important;
+      padding: 3px 8px !important;
+      border-radius: 4px !important;
+      font-size: 10.5px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 3px !important;
+      white-space: nowrap !important;
+      box-shadow: 0 1px 2px rgba(185, 28, 28, 0.08) !important;
+      transition: all 0.18s ease !important;
+    }
+    .btn-delete:hover {
+      background: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -33,120 +190,122 @@
         <div class="brand-logo">JP</div>
         <div>
           <div class="brand-title">Student Management</div>
-          <div class="brand-subtitle">Accounts & curriculum assignment</div>
+          <div class="brand-subtitle">Accounts, Registration & Curriculum Assignment</div>
         </div>
       </div>
       <div class="nav-actions">
-        <button type="button" class="btn-secondary" onclick="window.location.href='admin.html'">Admin Console</button>
-        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">Reports</button>
-        <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
+        <button type="button" class="btn-primary btn-sm" style="background: var(--java-orange, #e76f00);" onclick="window.location.href='students.html'">👥 Students</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='admin.html'">📊 Admin Console</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">📈 Reports</button>
+        <button type="button" class="btn-danger" onclick="logoutUser()">🚪 Logout</button>
       </div>
     </div>
   </header>
 
   <main class="page-container">
-    <!-- ADD STUDENT CARD -->
-    <section class="card">
-      <div class="section-heading">
-        <h2>Register New Student</h2>
-        <p>Add credentials and academic details</p>
+    
+    <!-- STATS OVERVIEW ROW -->
+    <section class="kpi-stat-grid">
+      <div class="kpi-card" style="border-top: 3px solid #0284c7;">
+        <div class="kpi-icon kpi-icon-blue">👥</div>
+        <div>
+          <div class="kpi-label">Common Accounts Pool</div>
+          <div class="kpi-value" id="kpiTotal">200</div>
+        </div>
       </div>
 
-      <form id="studentForm" onsubmit="event.preventDefault(); handleAddStudent();">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="name">Full Name *</label>
-            <input type="text" id="name" placeholder="e.g. Rahul Sharma" required>
-          </div>
-
-          <div class="form-group">
-            <label for="regNo">Register Number / Roll No *</label>
-            <input type="text" id="regNo" placeholder="e.g. 717821P101" required>
-          </div>
-
-          <div class="form-group">
-            <label for="dept">Department *</label>
-            <select id="dept" required>
-              <option value="CSE">Computer Science (CSE)</option>
-              <option value="IT">Information Technology (IT)</option>
-              <option value="AI&DS">AI & Data Science (AI&DS)</option>
-              <option value="ECE">Electronics (ECE)</option>
-              <option value="EEE">Electrical (EEE)</option>
-              <option value="MECH">Mechanical (MECH)</option>
-              <option value="CIVIL">Civil (CIVIL)</option>
-              <option value="MCA">MCA</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="year">Batch / Year</label>
-            <select id="year">
-              <option value="Final Year">Final Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="1st Year">1st Year</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="username">Username (Login ID) *</label>
-            <input type="text" id="username" placeholder="e.g. rahul123" required>
-          </div>
-
-          <div class="form-group">
-            <label for="password">Password *</label>
-            <input type="text" id="password" placeholder="e.g. pass123" required>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="assignedDay">Assigned Assessment Day (1 - 41)</label>
-            <select id="assignedDay">
-              <!-- Injected 1 to 41 -->
-            </select>
-          </div>
+      <div class="kpi-card" style="border-top: 3px solid #16a34a;">
+        <div class="kpi-icon kpi-icon-green">✅</div>
+        <div>
+          <div class="kpi-label">Details Entered (Registered)</div>
+          <div class="kpi-value" id="kpiRegistered">0</div>
         </div>
+      </div>
 
-        <div id="formAlert" class="alert-box" style="display:none; margin-top: 15px;"></div>
-
-        <div style="margin-top: 20px;">
-          <button type="submit" id="addBtn" class="btn-primary">Add Student to MongoDB</button>
+      <div class="kpi-card" style="border-top: 3px solid #d97706;">
+        <div class="kpi-icon kpi-icon-amber">⏳</div>
+        <div>
+          <div class="kpi-label">Pending / Unused Accounts</div>
+          <div class="kpi-value" id="kpiPending">200</div>
         </div>
-      </form>
+      </div>
+
+      <div class="kpi-card" style="border-top: 3px solid #9333ea;">
+        <div class="kpi-icon kpi-icon-purple">📝</div>
+        <div>
+          <div class="kpi-label">Assessments Completed</div>
+          <div class="kpi-value" id="kpiTests">0</div>
+        </div>
+      </div>
     </section>
 
     <!-- STUDENTS LIST TABLE CARD -->
     <section class="card">
-      <div class="section-heading-row" style="flex-wrap: wrap; gap: 12px;">
+      <div class="section-heading-row" style="flex-wrap: wrap; gap: 14px; margin-bottom: 16px; align-items: center;">
         <div>
-          <h2>Enrolled Students (<span id="studentCount">0</span>)</h2>
-          <p>Real-time records from MongoDB database (student1 – student200)</p>
+          <h2><span id="sectionTitle">Common Usernames</span> (<span id="studentCount">0</span>)</h2>
+          <p id="sectionSubtitle" style="color: var(--text-muted, #64748b); font-size: 13.5px; margin-top: 2px;">
+            Real-time records from MongoDB database (student1 – student200 pool)
+          </p>
         </div>
+        
         <div style="display: flex; gap: 10px; align-items: center; margin-left: auto; flex-wrap: wrap;">
-          <input type="text" id="studentSearchInput" placeholder="Search student by name, username, reg no..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color, #ccc); font-size: 14px; min-width: 240px;" oninput="filterStudents()">
-          <button type="button" class="btn-secondary btn-sm" onclick="loadStudents()">Refresh</button>
-          <button type="button" class="btn-primary btn-sm" onclick="handleRegenerateAll()" style="background: var(--java-navy, #1e293b);" title="Restores all missing student1 to student200 accounts in MongoDB">🔄 Regenerate 200 Accounts</button>
+          <select id="deptFilterSelect" class="dept-select-filter" onchange="filterStudents()" title="Filter by Department">
+            <option value="">All Departments</option>
+            <option value="CSE">CSE</option>
+            <option value="IT">IT</option>
+            <option value="AI&DS">AI&DS</option>
+            <option value="ECE">ECE</option>
+            <option value="EEE">EEE</option>
+            <option value="MECH">MECH</option>
+            <option value="CIVIL">CIVIL</option>
+            <option value="MCA">MCA</option>
+          </select>
+
+          <input type="text" id="studentSearchInput" placeholder="🔍 Search name, username, reg no..." style="padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border, #d5dee8); font-size: 13.5px; min-width: 250px; outline: none;" oninput="filterStudents()">
+          
+          <button type="button" class="btn-secondary btn-sm" onclick="loadStudents()" title="Refresh records from MongoDB" style="padding: 9px 14px;">🔄 Refresh</button>
+          
+          <button type="button" class="btn-primary btn-sm" onclick="handleRegenerateAll()" style="background: var(--java-navy, #1e293b); padding: 9px 14px;" title="Restores all missing student1 to student200 accounts in MongoDB">⚡ Regenerate 200 Accounts</button>
         </div>
       </div>
 
+      <!-- FILTER TABS: Common Usernames vs Registered Accounts vs Pending -->
+      <div class="user-filter-tabs" style="display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; border-bottom: 1px solid var(--border, #e2e8f0); padding-bottom: 14px;">
+        <button type="button" class="filter-tab-btn active" id="tabAll" onclick="setViewFilter('all')">
+          👥 Common Usernames (<span id="countAll">0</span>)
+        </button>
+        <button type="button" class="filter-tab-btn" id="tabUsed" onclick="setViewFilter('used')">
+          ✅ Registered Accounts (Details Entered) (<span id="countUsed">0</span>)
+        </button>
+        <button type="button" class="filter-tab-btn" id="tabUnused" onclick="setViewFilter('unused')">
+          ⏳ Unregistered / Pending Accounts (<span id="countUnused">0</span>)
+        </button>
+      </div>
+
+      <!-- TABLE -->
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Reg No</th>
+              <th style="width: 45px; text-align: center;">#</th>
+              <th>Student Info</th>
+              <th>Register No</th>
               <th>Department</th>
               <th>Username</th>
               <th>Password</th>
-              <th>Year</th>
+              <th>Batch / Year</th>
               <th>Assigned Day</th>
-              <th>Tests</th>
-              <th>Actions</th>
+              <th style="text-align: center;">Tests</th>
+              <th style="text-align: center;">Registration Status</th>
+              <th style="text-align: center;">Actions</th>
             </tr>
           </thead>
           <tbody id="studentTableBody">
             <tr>
-              <td colspan="10" class="text-center">Loading students from MongoDB...</td>
+              <td colspan="11" class="text-center" style="padding: 36px 20px;">
+                <div style="font-size: 14px; color: var(--text-muted, #64748b);">⏳ Loading students from MongoDB...</div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -157,40 +316,130 @@
   <script src="api.js"></script>
   <script>
     let allStudents = [];
+    let currentViewFilter = 'all'; // 'all' | 'used' | 'unused'
 
-    // Populate Day Dropdown
-    function populateDayDropdown() {
-      const select = document.getElementById('assignedDay');
-      select.innerHTML = '';
-      for (let i = 1; i <= 41; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = `Day ${i} Assessment`;
-        select.appendChild(opt);
+    // Check if real student details have been entered
+    function isDetailsEntered(s) {
+      if (!s) return false;
+      if (s.profileCompleted) return true;
+      if (Number(s.testsTaken || 0) > 0) return true;
+
+      const isDefaultName = !s.name || /^Student\s*\d+$/i.test(s.name.trim());
+      const isDefaultRegNo = !s.registerNumber || /^REG\d{3}$/i.test(s.registerNumber.trim()) || s.registerNumber.trim() === '-';
+      const isDefaultUsername = /^student\d+$/i.test(s.username || '');
+
+      if (!isDefaultUsername) return true;
+      if (!isDefaultName) return true;
+      if (!isDefaultRegNo && s.registerNumber.trim() !== '') return true;
+
+      return false;
+    }
+
+    function setViewFilter(mode) {
+      currentViewFilter = mode;
+      document.querySelectorAll('.filter-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const titleEl = document.getElementById('sectionTitle');
+      const subEl = document.getElementById('sectionSubtitle');
+
+      if (mode === 'used') {
+        document.getElementById('tabUsed')?.classList.add('active');
+        if (titleEl) titleEl.textContent = 'Registered Accounts (Details Entered)';
+        if (subEl) subEl.textContent = 'Students who have entered their real details (Name, Reg No, Department)';
+      } else if (mode === 'unused') {
+        document.getElementById('tabUnused')?.classList.add('active');
+        if (titleEl) titleEl.textContent = 'Unregistered Common Usernames';
+        if (subEl) subEl.textContent = 'Available default login accounts awaiting student registration (student1 – student200)';
+      } else {
+        document.getElementById('tabAll')?.classList.add('active');
+        if (titleEl) titleEl.textContent = 'Common Usernames';
+        if (subEl) subEl.textContent = 'Real-time records from MongoDB database (student1 – student200 pool)';
       }
+
+      filterStudents();
+    }
+
+    function getDeptBadgeClass(dept) {
+      const d = String(dept || '').toUpperCase();
+      if (d.includes('CSE')) return 'badge-dept-cse';
+      if (d.includes('IT')) return 'badge-dept-it';
+      if (d.includes('AI') || d.includes('DS')) return 'badge-dept-aids';
+      if (d.includes('ECE')) return 'badge-dept-ece';
+      return 'badge-dept-other';
     }
 
     function renderStudentTable(list) {
       const tbody = document.getElementById('studentTableBody');
       const countEl = document.getElementById('studentCount');
-      countEl.textContent = list.length;
+      if (countEl) countEl.textContent = list.length;
       tbody.innerHTML = '';
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center empty-state">No matching students found.</td></tr>`;
+        let emptyMsg = 'No matching students found.';
+        const searchVal = document.getElementById('studentSearchInput')?.value.trim();
+        const deptVal = document.getElementById('deptFilterSelect')?.value;
+
+        if (!searchVal && !deptVal) {
+          if (currentViewFilter === 'used') {
+            emptyMsg = 'No registered student accounts found yet. When students log in to any common username (e.g. student1) and enter their Name, Register Number, and Department, they will automatically appear here.';
+          } else if (currentViewFilter === 'unused') {
+            emptyMsg = 'All common student accounts have already been registered.';
+          }
+        }
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="11" class="text-center empty-state" style="padding: 42px 20px; color: var(--text-muted, #64748b);">
+              <div style="font-size: 24px; margin-bottom: 8px;">📋</div>
+              <div style="font-size: 14px; max-width: 500px; margin: auto; line-height: 1.6;">${emptyMsg}</div>
+            </td>
+          </tr>
+        `;
         return;
       }
 
       list.forEach((s, idx) => {
+        const isEntered = isDetailsEntered(s);
+        const statusBadge = isEntered
+          ? `<span class="badge-status-active"><span class="status-dot-pulse"></span> Details Entered</span>`
+          : `<span class="badge-status-idle"><span class="status-dot-idle"></span> Pending Details</span>`;
+
+        const initial = (s.name || s.username || 'S').trim().charAt(0).toUpperCase();
+        const avatarClass = isEntered ? 'user-avatar-sm' : 'user-avatar-sm default-avatar';
+
+        const displayName = isEntered 
+          ? `<div class="student-info-cell">
+               <div class="${avatarClass}">${initial}</div>
+               <div>
+                 <div style="font-weight: 700; color: var(--java-navy, #1e293b);">${escapeHTML(s.name)}</div>
+                 <div style="font-size: 11.5px; color: var(--text-muted, #64748b);">${escapeHTML(s.username)}</div>
+               </div>
+             </div>`
+          : `<div class="student-info-cell">
+               <div class="${avatarClass}">${initial}</div>
+               <div>
+                 <div style="color: #64748b; font-style: italic;">${escapeHTML(s.name)} <span style="font-size: 10.5px; opacity: 0.7;">(Default)</span></div>
+                 <div style="font-size: 11.5px; color: var(--text-muted, #64748b);">${escapeHTML(s.username)}</div>
+               </div>
+             </div>`;
+
+        const displayRegNo = isEntered && s.registerNumber && !/^REG\d{3}$/i.test(s.registerNumber)
+          ? `<span class="code-badge">${escapeHTML(s.registerNumber)}</span>`
+          : (isEntered ? `<span class="code-badge">${escapeHTML(s.registerNumber)}</span>` : `<span style="color: #94a3b8; font-style: italic; font-size: 12px;">— (Not entered)</span>`);
+
+        const deptClass = getDeptBadgeClass(s.department);
+        const displayDept = isEntered && s.department
+          ? `<span class="badge-dept ${deptClass}">${escapeHTML(s.department)}</span>`
+          : `<span style="color: #94a3b8; font-style: italic; font-size: 12px;">—</span>`;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td><b>${escapeHTML(s.name)}</b></td>
-          <td><code>${escapeHTML(s.registerNumber || '-')}</code></td>
-          <td><span class="badge-dept">${escapeHTML(s.department || '-')}</span></td>
-          <td><code>${escapeHTML(s.username)}</code></td>
-          <td><code>${escapeHTML(s.password)}</code></td>
-          <td>${escapeHTML(s.year || 'Final Year')}</td>
+          <td style="text-align: center; font-size: 11px; color: #64748b;">${idx + 1}</td>
+          <td>${displayName}</td>
+          <td>${displayRegNo}</td>
+          <td>${displayDept}</td>
+          <td><span class="code-badge" style="background: #f8fafc;">${escapeHTML(s.username)}</span></td>
+          <td><span class="code-badge" style="background: #f8fafc; color: #64748b;">${escapeHTML(s.password)}</span></td>
+          <td style="font-size: 11px;">${escapeHTML(s.year || 'Final Year')}</td>
           <td>
             <select class="select-inline" onchange="changeStudentDay('${s.id}', this.value)">
               ${Array.from({ length: 41 }, (_, i) => i + 1).map(d => `
@@ -198,10 +447,13 @@
               `).join('')}
             </select>
           </td>
-          <td><span class="badge-count">${s.testsTaken || 0}</span></td>
-          <td>
-            <button type="button" class="btn-delete" onclick="deleteStudent('${s.id}', '${encodeURIComponent(s.name || '')}', '${encodeURIComponent(s.username || '')}', '${encodeURIComponent(s.password || '1234')}')">
-              Delete
+          <td style="text-align: center;">
+            <span class="badge-count" style="font-weight: 700; ${s.testsTaken > 0 ? 'background: #eef2ff; color: #4338ca;' : ''}">${s.testsTaken || 0}</span>
+          </td>
+          <td style="text-align: center;">${statusBadge}</td>
+          <td style="text-align: center;">
+            <button type="button" class="btn-delete" title="Delete student and load credentials for re-registration" onclick="deleteStudent('${s.id}', '${encodeURIComponent(s.name || '')}', '${encodeURIComponent(s.username || '')}', '${encodeURIComponent(s.password || '1234')}')">
+              🗑️ Delete
             </button>
           </td>
         `;
@@ -211,11 +463,24 @@
 
     function filterStudents() {
       const query = (document.getElementById('studentSearchInput')?.value || '').toLowerCase().trim();
+      const selectedDept = (document.getElementById('deptFilterSelect')?.value || '').toLowerCase().trim();
+      
+      let baseList = allStudents;
+      if (currentViewFilter === 'used') {
+        baseList = allStudents.filter(isDetailsEntered);
+      } else if (currentViewFilter === 'unused') {
+        baseList = allStudents.filter(s => !isDetailsEntered(s));
+      }
+
+      if (selectedDept) {
+        baseList = baseList.filter(s => (s.department || '').toLowerCase().includes(selectedDept));
+      }
+
       if (!query) {
-        renderStudentTable(allStudents);
+        renderStudentTable(baseList);
         return;
       }
-      const filtered = allStudents.filter(s =>
+      const filtered = baseList.filter(s =>
         (s.name && s.name.toLowerCase().includes(query)) ||
         (s.username && s.username.toLowerCase().includes(query)) ||
         (s.registerNumber && s.registerNumber.toLowerCase().includes(query)) ||
@@ -234,55 +499,26 @@
         const res = await API.getStudents();
         if (res.success && res.students) {
           allStudents = res.students;
+
+          const usedCount = allStudents.filter(isDetailsEntered).length;
+          const unusedCount = allStudents.length - usedCount;
+          const totalTests = allStudents.reduce((sum, s) => sum + Number(s.testsTaken || 0), 0);
+
+          // Update Top KPI stats
+          if (document.getElementById('kpiTotal')) document.getElementById('kpiTotal').textContent = allStudents.length;
+          if (document.getElementById('kpiRegistered')) document.getElementById('kpiRegistered').textContent = usedCount;
+          if (document.getElementById('kpiPending')) document.getElementById('kpiPending').textContent = unusedCount;
+          if (document.getElementById('kpiTests')) document.getElementById('kpiTests').textContent = totalTests;
+
+          // Update Tab count badges
+          if (document.getElementById('countAll')) document.getElementById('countAll').textContent = allStudents.length;
+          if (document.getElementById('countUsed')) document.getElementById('countUsed').textContent = usedCount;
+          if (document.getElementById('countUnused')) document.getElementById('countUnused').textContent = unusedCount;
+
           filterStudents();
         }
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center error-msg">Failed to load students from server.</td></tr>`;
-      }
-    }
-
-    async function handleAddStudent() {
-      const name = document.getElementById('name').value.trim();
-      const registerNumber = document.getElementById('regNo').value.trim();
-      const department = document.getElementById('dept').value;
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const year = document.getElementById('year').value;
-      const assignedDay = parseInt(document.getElementById('assignedDay').value, 10) || 1;
-      const addBtn = document.getElementById('addBtn');
-      const alertBox = document.getElementById('formAlert');
-
-      if (!name || !username || !password) {
-        showFormAlert('Please fill in all required fields.', 'error');
-        return;
-      }
-
-      addBtn.disabled = true;
-      addBtn.innerText = 'Adding to MongoDB...';
-
-      try {
-        const res = await API.createStudent({
-          name,
-          registerNumber,
-          department,
-          username,
-          password,
-          year,
-          assignedDay
-        });
-        if (res.success) {
-          showFormAlert('Student registered successfully in MongoDB!', 'success');
-          document.getElementById('studentForm').reset();
-          populateDayDropdown();
-          loadStudents();
-        } else {
-          showFormAlert(res.message || 'Failed to add student.', 'error');
-        }
-      } catch (err) {
-        showFormAlert('Error connecting to MongoDB backend.', 'error');
-      } finally {
-        addBtn.disabled = false;
-        addBtn.innerText = 'Add Student to MongoDB';
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center error-msg" style="padding: 24px;">Failed to load students from server.</td></tr>`;
       }
     }
 
@@ -304,7 +540,6 @@
     async function deleteStudent(id, encName, encUsername, encPassword) {
       const name = decodeURIComponent(encName || '');
       const username = decodeURIComponent(encUsername || '');
-      const password = decodeURIComponent(encPassword || '');
 
       if (!confirm(`Are you sure you want to delete student "${name}" (${username}) from MongoDB?`)) {
         return;
@@ -313,29 +548,7 @@
       try {
         const res = await API.deleteStudent(id);
         if (res.success) {
-          // Automatically load the deleted student's username and password into the "Register New Student" form
-          if (username) {
-            document.getElementById('username').value = username;
-          }
-          if (password) {
-            document.getElementById('password').value = password;
-          } else {
-            document.getElementById('password').value = '1234';
-          }
-          document.getElementById('name').value = '';
-          document.getElementById('regNo').value = '';
-
-          // Scroll to the registration form and focus the Full Name input field
-          const formCard = document.getElementById('studentForm');
-          if (formCard) {
-            formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => {
-              const nameInput = document.getElementById('name');
-              if (nameInput) nameInput.focus();
-            }, 300);
-          }
-
-          showFormAlert(`Student "${name}" deleted. Credentials (Username: ${username}) loaded automatically into the form above for new registration.`, 'success');
+          alert(`Student "${name}" (${username}) deleted successfully.`);
           loadStudents();
         } else {
           alert('Failed to delete student: ' + res.message);
@@ -363,14 +576,6 @@
       }
     }
 
-    function showFormAlert(msg, type = 'error') {
-      const alertBox = document.getElementById('formAlert');
-      alertBox.className = `alert-box alert-${type}`;
-      alertBox.textContent = msg;
-      alertBox.style.display = 'block';
-      setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
-    }
-
     function escapeHTML(str) {
       if (!str) return '';
       return String(str)
@@ -382,10 +587,9 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      populateDayDropdown();
       loadStudents();
 
-      // Listen for cross-tab portal events (e.g. Student submits assessment, Admin deletes submission)
+      // Listen for cross-tab portal events (e.g. Student submits assessment, Admin updates)
       PortalEvents.listen((event) => {
         if (
           event.type === 'SUBMISSION_CREATED' ||
