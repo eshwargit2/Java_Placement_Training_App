@@ -2,6 +2,18 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function() {
+      try {
+        var u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!u || !u.username || u.role !== 'student') {
+          window.location.replace('index.html');
+        }
+      } catch (e) {
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
@@ -74,11 +86,15 @@
     let timerInterval = null;
     let isSubmitting = false;
 
-    const user = getLoggedInUser();
-    const studentUsername = user ? user.username : (localStorage.getItem('studentUsername') || 'student1');
-    const studentName = user ? user.name : (localStorage.getItem('studentName') || 'Student');
-    const studentYear = user ? user.year : (localStorage.getItem('studentYear') || 'Final Year');
-    let assignedDay = parseInt(localStorage.getItem('assessmentDay') || localStorage.getItem('assignedDay') || '1', 10);
+    const user = requireAuth('student');
+    if (!user) {
+      // redirected by requireAuth
+      throw new Error('Unauthorized');
+    }
+    const studentUsername = user.username;
+    const studentName = user.name || 'Student';
+    const studentYear = user.year || 'Final Year';
+    let assignedDay = parseInt(localStorage.getItem('assessmentDay') || user.assignedDay || '1', 10);
 
     document.getElementById('studentName').textContent = studentName;
     document.getElementById('studentUsername').textContent = studentUsername;

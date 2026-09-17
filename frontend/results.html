@@ -2,6 +2,18 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function() {
+      try {
+        var u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!u || !u.username) {
+          window.location.replace('index.html');
+        }
+      } catch (e) {
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
@@ -163,6 +175,9 @@
     let currentResultData = null;
 
     async function loadResult() {
+      const user = requireAuth();
+      if (!user) return;
+
       const urlParams = new URLSearchParams(window.location.search);
       const submissionId = urlParams.get('id') || localStorage.getItem('currentSubmissionId');
 

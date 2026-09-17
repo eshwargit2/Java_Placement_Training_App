@@ -16,7 +16,7 @@ if (window.location.protocol.startsWith('http')) {
   }
 }
 
-console.log(`[Placement Portal API] Configured API Base: ${API_BASE}`);
+
 
 // Cross-tab real-time event bus
 const portalBroadcast = (typeof BroadcastChannel !== 'undefined') 
@@ -279,6 +279,38 @@ function getLoggedInUser() {
   return null;
 }
 
+function requireAuth(allowedRoles) {
+  try {
+    const raw = localStorage.getItem('currentUser');
+    if (!raw) {
+      window.location.replace('index.html');
+      return null;
+    }
+    const user = JSON.parse(raw);
+    if (!user || !user.username) {
+      localStorage.clear();
+      window.location.replace('index.html');
+      return null;
+    }
+    if (allowedRoles) {
+      const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+      if (!roles.includes(user.role)) {
+        if (user.role === 'admin') {
+          window.location.replace('admin.html');
+        } else {
+          window.location.replace('student.html');
+        }
+        return null;
+      }
+    }
+    return user;
+  } catch (e) {
+    localStorage.clear();
+    window.location.replace('index.html');
+    return null;
+  }
+}
+
 function setLoggedInUser(user) {
   localStorage.setItem('currentUser', JSON.stringify(user));
   localStorage.setItem('loggedInUser', user.role);
@@ -298,5 +330,6 @@ function logoutUser() {
 window.API = API;
 window.PortalEvents = PortalEvents;
 window.getLoggedInUser = getLoggedInUser;
+window.requireAuth = requireAuth;
 window.setLoggedInUser = setLoggedInUser;
 window.logoutUser = logoutUser;

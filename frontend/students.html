@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function() {
+      try {
+        var u = JSON.parse(localStorage.getItem('currentUser') || 'null');
+        if (!u || !u.username || u.role !== 'admin') {
+          window.location.replace('index.html');
+        }
+      } catch (e) {
+        window.location.replace('index.html');
+      }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Java Placement Assessment Portal - Student Accounts & Curriculum Day Assignment.">
@@ -213,6 +225,9 @@
     }
 
     async function loadStudents() {
+      const user = requireAuth('admin');
+      if (!user) return;
+
       const tbody = document.getElementById('studentTableBody');
 
       try {
