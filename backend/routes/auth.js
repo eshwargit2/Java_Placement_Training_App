@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
-// POST /api/auth/login
+// POST /api/auth/login - Direct MongoDB Authentication
 router.post('/login', async (req, res) => {
   try {
     const { username, password, expectedRole } = req.body;
@@ -18,8 +18,13 @@ router.post('/login', async (req, res) => {
     const cleanPassword = String(password).trim();
     const roleMode = expectedRole === 'admin' ? 'admin' : expectedRole === 'student' ? 'student' : null;
 
-    // Check user in MongoDB
-    const user = await User.findOne({ username: cleanUsername });
+    // Check user directly in MongoDB
+    const user = await User.findOne({ 
+      $or: [
+        { username: cleanUsername },
+        ...(cleanUsername === '@admin' || cleanUsername === 'admin' ? [{ username: '@admin' }, { username: 'admin' }] : [])
+      ] 
+    }).lean();
 
     if (!user) {
       return res.status(401).json({
@@ -64,12 +69,12 @@ router.post('/login', async (req, res) => {
         registerNumber: user.registerNumber || '',
         department: user.department || '',
         year: user.year || 'Final Year',
-        assignedDay: user.assignedDay,
+        assignedDay: user.assignedDay || 1,
         profileCompleted: !!user.profileCompleted,
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error from MongoDB:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error during login.',

@@ -229,6 +229,45 @@ const API = {
     const res = await fetch(`${API_BASE}/stats`);
     return await res.json();
   },
+
+  // Online Java Compiler Integration
+  async compileCode(code, input = '') {
+    const payload = {
+      code: typeof code === 'string' ? code : '',
+      input: typeof input === 'string' ? input : '',
+    };
+
+    // Primary attempt: backend proxy endpoint
+    try {
+      const res = await fetch(`${API_BASE}/compile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('[API.compileCode] Backend proxy failed, falling back to direct Catalyst endpoint:', e);
+    }
+
+    // Direct fallback to deployed compiler API
+    try {
+      const directRes = await fetch('https://appsail-50045987380.development.catalystappsail.in/api/compile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      return await directRes.json();
+    } catch (directErr) {
+      console.error('[API.compileCode] Direct compiler call failed:', directErr);
+      return {
+        success: false,
+        output: `Compilation service unreachable. ${directErr.message || ''}`,
+      };
+    }
+  },
 };
 
 // Global helper for user session

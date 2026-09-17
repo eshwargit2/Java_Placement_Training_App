@@ -100,6 +100,68 @@
       </div>
     </section>
 
+    <!-- ONLINE JAVA CODE PLAYGROUND / COMPILER CARD -->
+    <section class="card" id="playgroundSection">
+      <div class="section-heading-row">
+        <div>
+          <h2>☕ Online Java Playground & Live Compiler</h2>
+          <p>Practice Java algorithms, test code snippets, and compile programs live in the cloud sandbox</p>
+        </div>
+      </div>
+
+      <div id="playgroundContent">
+        <div class="ide-wrapper" id="playground_ide">
+          <div class="ide-top-header">
+            <div class="ide-tabs-group">
+              <div class="ide-tab">
+                <span class="ide-tab-icon">☕</span>
+                <span>Main.java</span>
+              </div>
+              <span class="ide-lang-badge">Java 17/21 Cloud Engine</span>
+            </div>
+            <div class="ide-actions-group">
+              <button type="button" class="ide-btn-tool" onclick="resetPlaygroundCode()">↺ Reset</button>
+              <button type="button" class="ide-btn-tool" onclick="copyPlaygroundCode()">📋 Copy</button>
+            </div>
+          </div>
+
+          <div class="ide-body-container">
+            <div class="ide-gutter" id="pgGutter">1\n2\n3\n4\n5\n6\n7\n8\n9\n10</div>
+            <div class="ide-editor-stage">
+              <pre class="ide-highlight-layer" id="pgHighlight" aria-hidden="true"></pre>
+              <textarea class="ide-code-textarea" id="pgCode" spellcheck="false" rows="12" oninput="onPgCodeInput()"
+                onscroll="syncPgScroll()" onkeydown="handlePgKeyDown(event)">import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter your name: ");
+        String name = scanner.nextLine();
+        System.out.println("Hello, " + name + "! Welcome to Java Placement Training.");
+        scanner.close();
+    }
+}</textarea>
+            </div>
+          </div>
+
+          <div class="ide-controls-bar">
+            <div class="ide-left-controls">
+              <span>☕ Cloud Java JVM</span>
+            </div>
+            <div class="ide-right-controls">
+              <button type="button" class="ide-btn-run" id="pgBtnRun" onclick="runPlaygroundCode()">
+                ▶ Run Java Code
+              </button>
+            </div>
+          </div>
+
+          <div class="ide-console-section">
+            <div class="ide-console-output" id="pgOutput" style="min-height: 75px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- PREVIOUS SUBMISSIONS CARD -->
     <section class="card">
       <div class="section-heading-row">
@@ -496,10 +558,299 @@
       }
     };
 
+    // ==========================================
+    // ONLINE JAVA PLAYGROUND LOGIC
+    // ==========================================
+    function updatePgGutter() {
+      const textarea = document.getElementById('pgCode');
+      const gutter = document.getElementById('pgGutter');
+      if (!textarea || !gutter) return;
+
+      const lineCount = textarea.value.split('\n').length;
+      let lineNumbers = '';
+      for (let i = 1; i <= Math.max(lineCount, 1); i++) {
+        lineNumbers += i + '\n';
+      }
+      gutter.textContent = lineNumbers;
+    }
+
+    function highlightJavaCode(code) {
+      if (!code) return '';
+
+      const tokenRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*')|(@\w+)|(\b\d+(?:\.\d+)?(?:[fFdDlL])?\b)|(\b(?:abstract|assert|break|case|catch|class|const|continue|default|do|else|enum|extends|final|finally|for|goto|if|implements|import|instanceof|interface|native|new|package|private|protected|public|return|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|volatile|while)\b)|(\b(?:boolean|byte|char|double|float|int|long|short|void)\b)|(\b(?:System|Scanner|String|Integer|Double|Float|Long|Short|Byte|Boolean|Character|Math|Arrays|Collections|List|ArrayList|LinkedList|Map|HashMap|TreeMap|Set|HashSet|TreeSet|Queue|Deque|Stack|StringBuilder|StringBuffer|Object|Thread|Runnable|Exception|Throwable|RuntimeException|Override|Main)\b)|(\b[a-zA-Z_]\w*(?=\s*\())|([+\-*\/%=&|<>!^~?:;.,\[\]{}()]+)|([a-zA-Z_]\w*)/g;
+
+      let html = '';
+      let lastIndex = 0;
+      let match;
+
+      while ((match = tokenRegex.exec(code)) !== null) {
+        if (match.index > lastIndex) {
+          html += escapeHTML(code.substring(lastIndex, match.index));
+        }
+        const [
+          fullMatch,
+          comment,
+          str,
+          annotation,
+          number,
+          keyword,
+          primType,
+          className,
+          methodName,
+          operator,
+          identifier
+        ] = match;
+
+        if (comment) {
+          html += `<span class="hl-comment">${escapeHTML(comment)}</span>`;
+        } else if (str) {
+          html += `<span class="hl-string">${escapeHTML(str)}</span>`;
+        } else if (annotation) {
+          html += `<span class="hl-annotation">${escapeHTML(annotation)}</span>`;
+        } else if (number) {
+          html += `<span class="hl-number">${escapeHTML(number)}</span>`;
+        } else if (keyword) {
+          html += `<span class="hl-keyword">${escapeHTML(keyword)}</span>`;
+        } else if (primType) {
+          html += `<span class="hl-type">${escapeHTML(primType)}</span>`;
+        } else if (className) {
+          html += `<span class="hl-class">${escapeHTML(className)}</span>`;
+        } else if (methodName) {
+          html += `<span class="hl-method">${escapeHTML(methodName)}</span>`;
+        } else if (operator) {
+          html += `<span class="hl-operator">${escapeHTML(operator)}</span>`;
+        } else if (identifier) {
+          html += `<span class="hl-ident">${escapeHTML(identifier)}</span>`;
+        } else {
+          html += escapeHTML(fullMatch);
+        }
+
+        lastIndex = match.index + fullMatch.length;
+      }
+
+      if (lastIndex < code.length) {
+        html += escapeHTML(code.substring(lastIndex));
+      }
+
+      return html;
+    }
+
+    function syncPgScroll() {
+      const textarea = document.getElementById('pgCode');
+      const gutter = document.getElementById('pgGutter');
+      const highlight = document.getElementById('pgHighlight');
+      if (textarea) {
+        if (gutter) gutter.scrollTop = textarea.scrollTop;
+        if (highlight) {
+          highlight.scrollTop = textarea.scrollTop;
+          highlight.scrollLeft = textarea.scrollLeft;
+        }
+      }
+    }
+
+    function onPgCodeInput() {
+      updatePgGutter();
+      const textarea = document.getElementById('pgCode');
+      const highlight = document.getElementById('pgHighlight');
+      if (textarea) {
+        localStorage.setItem('playground_java_code', textarea.value);
+        if (highlight) {
+          highlight.innerHTML = highlightJavaCode(textarea.value) + '<br/>';
+        }
+      }
+    }
+
+    function handlePgKeyDown(e) {
+      const textarea = document.getElementById('pgCode');
+      if (!textarea) return;
+
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        textarea.value = value.substring(0, start) + '    ' + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+        onPgCodeInput();
+      } else if (e.key === 'Enter') {
+        const start = textarea.selectionStart;
+        const value = textarea.value;
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        const currentLine = value.substring(lineStart, start);
+        const match = currentLine.match(/^(\s+)/);
+        let indent = match ? match[1] : '';
+
+        if (currentLine.trim().endsWith('{')) {
+          e.preventDefault();
+          const extraIndent = indent + '    ';
+          textarea.value = value.substring(0, start) + '\n' + extraIndent + value.substring(start);
+          textarea.selectionStart = textarea.selectionEnd = start + 1 + extraIndent.length;
+          onPgCodeInput();
+        } else if (indent.length > 0) {
+          e.preventDefault();
+          textarea.value = value.substring(0, start) + '\n' + indent + value.substring(start);
+          textarea.selectionStart = textarea.selectionEnd = start + 1 + indent.length;
+          onPgCodeInput();
+        }
+      }
+    }
+
+    function resetPlaygroundCode() {
+      if (confirm('Reset Java Playground code to default template?')) {
+        const defaultCode = `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        System.out.print("Enter your name: ");\n        String name = scanner.nextLine();\n        System.out.println("Hello, " + name + "! Welcome to Java Placement Training.");\n        scanner.close();\n    }\n}`;
+        const textarea = document.getElementById('pgCode');
+        if (textarea) {
+          textarea.value = defaultCode;
+          onPgCodeInput();
+        }
+      }
+    }
+
+    function copyPlaygroundCode() {
+      const textarea = document.getElementById('pgCode');
+      if (!textarea) return;
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        showLiveToast('Java code copied to clipboard!', 'success');
+      }).catch(() => {
+        textarea.select();
+        document.execCommand('copy');
+        showLiveToast('Java code copied to clipboard!', 'success');
+      });
+    }
+
+    function formatPgTerminalSession(rawOutput, inputs) {
+      let cleanText = (rawOutput || '').split(/Exception in thread "main"/i)[0];
+      let history = [];
+      let remaining = cleanText;
+
+      for (let i = 0; i < inputs.length; i++) {
+        const inp = inputs[i];
+        const match = remaining.match(/^(.*?[:\?>]\s*)/s);
+        if (match) {
+          history.push({ prompt: match[1], input: inp });
+          remaining = remaining.substring(match[0].length);
+        } else {
+          const lineMatch = remaining.match(/^(.*?\n)/s);
+          if (lineMatch) {
+            history.push({ prompt: lineMatch[1], input: inp });
+            remaining = remaining.substring(lineMatch[0].length);
+          } else {
+            history.push({ prompt: remaining, input: inp });
+            remaining = '';
+          }
+        }
+      }
+
+      return { history, currentPrompt: remaining };
+    }
+
+    function focusPgTerminalInput() {
+      const inputEl = document.getElementById('pg_term_inline_input');
+      if (inputEl) {
+        inputEl.focus();
+        if (inputEl.setSelectionRange) {
+          const len = inputEl.value.length;
+          inputEl.setSelectionRange(len, len);
+        }
+      }
+    }
+
+    function renderPgTerminalHTML(session, isWaitingInput, inputSpanId) {
+      let html = '';
+      session.history.forEach(item => {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(item.prompt)}</span><span class="term-entered-val">${escapeHTML(item.input)}</span></div>`;
+      });
+
+      if (isWaitingInput) {
+        const pText = session.currentPrompt || '';
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(pText)}</span><input type="text" id="${inputSpanId}" class="term-raw-terminal-input" autocomplete="off" spellcheck="false" autofocus /></div>`;
+      } else if (session.currentPrompt) {
+        html += `<div class="term-final-output">${escapeHTML(session.currentPrompt)}</div>`;
+      }
+
+      return html;
+    }
+
+    async function runPlaygroundCode(accumulatedInputs = []) {
+      const textarea = document.getElementById('pgCode');
+      const outputEl = document.getElementById('pgOutput');
+      const btnRun = document.getElementById('pgBtnRun');
+
+      if (!textarea) return;
+      const code = textarea.value.trim();
+      if (!code) {
+        alert('Please write Java code to run.');
+        return;
+      }
+
+      if (outputEl) {
+        outputEl.onclick = focusPgTerminalInput;
+      }
+
+      if (btnRun) {
+        btnRun.disabled = true;
+        btnRun.innerHTML = '<span class="ide-spinner"></span> Compiling...';
+      }
+
+      try {
+        const payloadInput = accumulatedInputs.join('\n');
+        const result = await API.compileCode(code, payloadInput);
+
+        if (result && result.success) {
+          const rawOutput = result.output || '';
+          const session = formatPgTerminalSession(rawOutput, accumulatedInputs);
+          outputEl.innerHTML = renderPgTerminalHTML(session, false, '');
+          outputEl.className = 'ide-console-output success-text';
+          outputEl.scrollTop = outputEl.scrollHeight;
+        } else if (result && result.output && result.output.includes('NoSuchElementException')) {
+          const session = formatPgTerminalSession(result.output, accumulatedInputs);
+          outputEl.className = 'ide-console-output';
+          outputEl.innerHTML = renderPgTerminalHTML(session, true, 'pg_term_inline_input');
+          outputEl.scrollTop = outputEl.scrollHeight;
+
+          setTimeout(() => {
+            focusPgTerminalInput();
+            const inputField = document.getElementById('pg_term_inline_input');
+            if (inputField) {
+              inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  const enteredVal = inputField.value;
+                  const nextInputs = [...accumulatedInputs, enteredVal];
+                  runPlaygroundCode(nextInputs);
+                }
+              });
+            }
+          }, 10);
+        } else {
+          outputEl.innerHTML = escapeHTML((result && result.output) ? result.output : 'Compilation / Runtime Error');
+          outputEl.className = 'ide-console-output error-text';
+          outputEl.scrollTop = outputEl.scrollHeight;
+        }
+      } catch (err) {
+        console.error('Playground compile error:', err);
+        outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Network error')}</span>`;
+      } finally {
+        if (btnRun) {
+          btnRun.disabled = false;
+          btnRun.innerHTML = '▶ Run Java Code';
+        }
+      }
+    }
+
     // Live Sync & Event Setup
     window.addEventListener('DOMContentLoaded', () => {
       loadStudentData();
       checkPythonPromoPopup();
+
+      // Restore saved playground code
+      const savedPg = localStorage.getItem('playground_java_code');
+      const pgCodeEl = document.getElementById('pgCode');
+      if (savedPg && pgCodeEl) {
+        pgCodeEl.value = savedPg;
+      }
+      onPgCodeInput();
 
       // Listen for cross-tab portal events (e.g. Admin deletes a submission)
       PortalEvents.listen((event) => {
@@ -531,6 +882,16 @@
         loadStudentData();
       }, 4000);
     });
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 </body>
 

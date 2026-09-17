@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Java Placement Assessment Portal - Live Assessment Session with MCQs, Debugging, and Coding challenges.">
+  <meta name="description"
+    content="Java Placement Assessment Portal - Live Assessment Session with MCQs, Debugging, and Coding challenges.">
   <title>Java Assessment — Live Session</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
 </head>
+
 <body class="assessment-body">
 
   <!-- ASSESSMENT TOP BAR -->
@@ -146,19 +151,88 @@
             }
             // CODING questions
             else if (type === 'CODING') {
+              const defaultTemplate = `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Write your Java solution here
+        
+        scanner.close();
+    }
+}`;
+              const savedCode = sessionStorage.getItem(`assess_code_${assignedDay}_${idx}`) || defaultTemplate;
+              const sampleInputVal = q.sampleInput || '';
+              const expectedOutputVal = q.expectedOutput || '';
+
               contentHtml = `
                 <div class="coding-problem-box">
                   ${q.codingRequirement ? `<div class="code-req"><b>📌 Requirement:</b> ${escapeHTML(q.codingRequirement)}</div>` : ''}
-                  ${q.sampleInput ? `<div class="code-io"><b>Sample Input:</b> <code>${escapeHTML(q.sampleInput)}</code></div>` : ''}
-                  ${q.expectedOutput ? `<div class="code-io"><b>Expected Output:</b> <code>${escapeHTML(q.expectedOutput)}</code></div>` : ''}
+                  ${sampleInputVal ? `<div class="code-io"><b>Sample Input:</b> <code>${escapeHTML(sampleInputVal)}</code></div>` : ''}
+                  ${expectedOutputVal ? `<div class="code-io"><b>Expected Output:</b> <code>${escapeHTML(expectedOutputVal)}</code></div>` : ''}
                   ${q.codingEvaluation ? `<div class="code-criteria"><b>Evaluation Logic:</b> ${escapeHTML(q.codingEvaluation)}</div>` : ''}
                   
-                  <div class="code-editor-wrap">
-                    <div class="editor-header">
-                      <span>☕ Java Solution Code</span>
-                      <small>Write standard Java code with classes and methods</small>
+                  <!-- RICH ONLINE JAVA CODE EDITOR -->
+                  <div class="ide-wrapper" id="ide_${idx}">
+                    <!-- Top Bar -->
+                    <div class="ide-top-header">
+                      <div class="ide-tabs-group">
+                        <div class="ide-tab">
+                          <span class="ide-tab-icon">☕</span>
+                          <span>Main.java</span>
+                        </div>
+                        <span class="ide-lang-badge">Java 17/21</span>
+                      </div>
+                      <div class="ide-actions-group">
+                        <button type="button" class="ide-btn-tool" onclick="resetCodeEditor(${idx})" title="Reset boilerplate code">
+                          ↺ Reset
+                        </button>
+                        <button type="button" class="ide-btn-tool" onclick="copyCodeEditor(${idx})" title="Copy code to clipboard">
+                          📋 Copy
+                        </button>
+                      </div>
                     </div>
-                    <textarea class="code-textarea" id="coding_${idx}" placeholder="// Write your complete Java program here...\npublic class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}" rows="12"></textarea>
+
+                    <!-- Editor Body -->
+                    <div class="ide-body-container">
+                      <div class="ide-gutter" id="gutter_${idx}">1\n2\n3\n4\n5\n6\n7\n8\n9\n10</div>
+                      <textarea 
+                        class="ide-code-textarea" 
+                        id="coding_${idx}" 
+                        spellcheck="false" 
+                        rows="12"
+                        oninput="onCodeInput(${idx})"
+                        onscroll="syncScroll(${idx})"
+                        onkeydown="handleCodeKeyDown(event, ${idx})"
+                        placeholder="// Write your Java solution here..."
+                      >${escapeHTML(savedCode)}</textarea>
+                    </div>
+
+                    <!-- Controls / Run Bar -->
+                    <div class="ide-controls-bar">
+                      <div class="ide-left-controls">
+                        <span>☕ Cloud Java JVM</span>
+                      </div>
+                      <div class="ide-right-controls">
+                        <button type="button" class="ide-btn-run" id="btnRun_${idx}" onclick="runCode(${idx})">
+                          ▶ Run Code
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Terminal Output Console -->
+                    <div class="ide-console-section" id="consoleSection_${idx}">
+                      <div class="ide-console-header">
+                        <div class="ide-console-title">
+                          <span>🖥 Terminal</span>
+                          <span class="ide-status-pill ide-status-idle" id="statusPill_${idx}">Ready</span>
+                        </div>
+                        <button type="button" class="ide-btn-tool" style="padding: 2px 8px; font-size: 11px;" onclick="clearConsole(${idx})">
+                          Clear
+                        </button>
+                      </div>
+                      <div class="ide-console-output" id="output_${idx}">Click "▶ Run Code" to compile and execute your Java program.</div>
+                    </div>
                   </div>
                 </div>
               `;
@@ -174,6 +248,11 @@
             `;
 
             container.appendChild(card);
+
+            // Initialize gutter after rendering
+            if (type === 'CODING') {
+              setTimeout(() => onCodeInput(idx), 0);
+            }
           });
 
           formEl.style.display = 'block';
@@ -187,9 +266,247 @@
           `;
         }
       } catch (err) {
+        console.error('Error loading questions:', err);
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
         errorEl.textContent = 'Failed to load assessment questions from MongoDB.';
+      }
+    }
+
+    // Gutter & Scroll Syncing
+    function updateGutter(idx) {
+      const textarea = document.getElementById(`coding_${idx}`);
+      const gutter = document.getElementById(`gutter_${idx}`);
+      if (!textarea || !gutter) return;
+
+      const lineCount = (textarea.value.match(/\n/g) || []).length + 1;
+      let lineNumbers = '';
+      for (let i = 1; i <= Math.max(lineCount, 12); i++) {
+        lineNumbers += i + '\n';
+      }
+      gutter.textContent = lineNumbers;
+    }
+
+    function syncScroll(idx) {
+      const textarea = document.getElementById(`coding_${idx}`);
+      const gutter = document.getElementById(`gutter_${idx}`);
+      if (textarea && gutter) {
+        gutter.scrollTop = textarea.scrollTop;
+      }
+    }
+
+    function onCodeInput(idx) {
+      updateGutter(idx);
+      const textarea = document.getElementById(`coding_${idx}`);
+      if (textarea) {
+        sessionStorage.setItem(`assess_code_${assignedDay}_${idx}`, textarea.value);
+      }
+    }
+
+    // Keybindings: Tab to indent 4 spaces, Enter to preserve indent
+    function handleCodeKeyDown(e, idx) {
+      const textarea = document.getElementById(`coding_${idx}`);
+      if (!textarea) return;
+
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        textarea.value = value.substring(0, start) + '    ' + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + 4;
+        onCodeInput(idx);
+      } else if (e.key === 'Enter') {
+        const start = textarea.selectionStart;
+        const value = textarea.value;
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        const currentLine = value.substring(lineStart, start);
+        const match = currentLine.match(/^(\s+)/);
+        let indent = match ? match[1] : '';
+
+        // If line ends with '{', add extra 4 spaces
+        if (currentLine.trim().endsWith('{')) {
+          e.preventDefault();
+          const extraIndent = indent + '    ';
+          textarea.value = value.substring(0, start) + '\n' + extraIndent + value.substring(start);
+          textarea.selectionStart = textarea.selectionEnd = start + 1 + extraIndent.length;
+          onCodeInput(idx);
+        } else if (indent.length > 0) {
+          e.preventDefault();
+          textarea.value = value.substring(0, start) + '\n' + indent + value.substring(start);
+          textarea.selectionStart = textarea.selectionEnd = start + 1 + indent.length;
+          onCodeInput(idx);
+        }
+      }
+    }
+
+    function resetCodeEditor(idx) {
+      if (confirm('Reset code to default Java template? Your current edits for this question will be cleared.')) {
+        const textarea = document.getElementById(`coding_${idx}`);
+        const defaultTemplate = `import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        // Write your Java solution here\n        \n        scanner.close();\n    }\n}`;
+        if (textarea) {
+          textarea.value = defaultTemplate;
+          onCodeInput(idx);
+        }
+      }
+    }
+
+    function copyCodeEditor(idx) {
+      const textarea = document.getElementById(`coding_${idx}`);
+      if (!textarea) return;
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        alert('Code copied to clipboard!');
+      }).catch(() => {
+        textarea.select();
+        document.execCommand('copy');
+        alert('Code copied to clipboard!');
+      });
+    }
+
+    function clearConsole(idx) {
+      const outputEl = document.getElementById(`output_${idx}`);
+      const statusPill = document.getElementById(`statusPill_${idx}`);
+      if (outputEl) {
+        outputEl.innerHTML = 'Console cleared.';
+        outputEl.className = 'ide-console-output';
+      }
+      if (statusPill) {
+        statusPill.className = 'ide-status-pill ide-status-idle';
+        statusPill.textContent = 'Ready';
+      }
+    }
+
+    function formatTerminalSession(rawOutput, inputs) {
+      let cleanText = (rawOutput || '').split(/Exception in thread "main"/i)[0];
+      let history = [];
+      let remaining = cleanText;
+
+      for (let i = 0; i < inputs.length; i++) {
+        const inp = inputs[i];
+        const match = remaining.match(/^(.*?[:\?>]\s*)/s);
+        if (match) {
+          history.push({ prompt: match[1], input: inp });
+          remaining = remaining.substring(match[0].length);
+        } else {
+          const lineMatch = remaining.match(/^(.*?\n)/s);
+          if (lineMatch) {
+            history.push({ prompt: lineMatch[1], input: inp });
+            remaining = remaining.substring(lineMatch[0].length);
+          } else {
+            history.push({ prompt: remaining, input: inp });
+            remaining = '';
+          }
+        }
+      }
+
+      return { history, currentPrompt: remaining };
+    }
+
+    function renderTerminalHTML(session, isWaitingInput, inputSpanId) {
+      let html = '';
+      session.history.forEach(item => {
+        html += `<div><span class="term-prompt-text">${escapeHTML(item.prompt)}</span><span class="term-entered-val">${escapeHTML(item.input)}</span></div>`;
+      });
+
+      if (isWaitingInput) {
+        const pText = session.currentPrompt || '';
+        html += `<div><span class="term-prompt-text">${escapeHTML(pText)}</span><span class="term-inline-typing" id="${inputSpanId}" contenteditable="true" spellcheck="false"></span></div>`;
+      } else if (session.currentPrompt) {
+        html += `<div style="white-space:pre-wrap;">${escapeHTML(session.currentPrompt)}</div>`;
+      }
+
+      return html;
+    }
+
+    // Run Code & Live Compilation with Same-Line Interactive Input
+    async function runCode(idx, accumulatedInputs = []) {
+      const textarea = document.getElementById(`coding_${idx}`);
+      const outputEl = document.getElementById(`output_${idx}`);
+      const statusPill = document.getElementById(`statusPill_${idx}`);
+      const btnRun = document.getElementById(`btnRun_${idx}`);
+
+      if (!textarea) return;
+      const code = textarea.value.trim();
+      if (!code) {
+        alert('Please write some Java code before running.');
+        return;
+      }
+
+      if (btnRun) {
+        btnRun.disabled = true;
+        btnRun.innerHTML = '<span class="ide-spinner"></span> Compiling...';
+      }
+
+      if (statusPill) {
+        statusPill.className = 'ide-status-pill ide-status-running';
+        statusPill.innerHTML = '<span class="ide-spinner" style="width:10px;height:10px;border-width:1.5px;"></span> Running';
+      }
+
+      if (accumulatedInputs.length === 0 && outputEl) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = '<span style="color:#94a3b8;">☕ Compiling and executing on Catalyst Cloud JVM...</span>';
+      }
+
+      const startTime = performance.now();
+
+      try {
+        const payloadInput = accumulatedInputs.join('\n');
+        const result = await API.compileCode(code, payloadInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const rawOutput = result.output || '(No output returned)';
+          const session = formatTerminalSession(rawOutput, accumulatedInputs);
+          outputEl.innerHTML = renderTerminalHTML(session, false, '');
+          outputEl.className = 'ide-console-output success-text';
+          statusPill.className = 'ide-status-pill ide-status-success';
+          statusPill.textContent = `✔ Success (${elapsed}s)`;
+        } else if (result && result.output && result.output.includes('NoSuchElementException')) {
+          const session = formatTerminalSession(result.output, accumulatedInputs);
+          statusPill.className = 'ide-status-pill ide-status-running';
+          statusPill.textContent = 'Waiting for input...';
+
+          outputEl.className = 'ide-console-output';
+          outputEl.innerHTML = renderTerminalHTML(session, true, `term_inline_input_${idx}`);
+
+          const inlineSpan = document.getElementById(`term_inline_input_${idx}`);
+          if (inlineSpan) {
+            inlineSpan.focus();
+            try {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(inlineSpan);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } catch (e) { }
+
+            inlineSpan.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const enteredVal = inlineSpan.innerText.trim();
+                const nextInputs = [...accumulatedInputs, enteredVal];
+                runCode(idx, nextInputs);
+              }
+            });
+          }
+        } else {
+          outputEl.innerHTML = escapeHTML((result && result.output) ? result.output : 'Compilation / Runtime Error');
+          outputEl.className = 'ide-console-output error-text';
+          statusPill.className = 'ide-status-pill ide-status-error';
+          statusPill.textContent = `✖ Error (${elapsed}s)`;
+        }
+      } catch (err) {
+        console.error('Compiler execution failed:', err);
+        outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Unknown network error')}</span>`;
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ Network Error';
+      } finally {
+        if (btnRun) {
+          btnRun.disabled = false;
+          btnRun.innerHTML = '▶ Run Code';
+        }
       }
     }
 
@@ -277,4 +594,5 @@
     window.addEventListener('DOMContentLoaded', loadQuestions);
   </script>
 </body>
+
 </html>

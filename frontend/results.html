@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Java Placement Assessment Portal - Assessment Result, Performance Breakdown, and Detailed Solution Key.">
+  <meta name="description"
+    content="Java Placement Assessment Portal - Assessment Result, Performance Breakdown, and Detailed Solution Key.">
   <title>Assessment Result — Java Placement Portal</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -29,12 +33,24 @@
       animation: pulseDistinction 2s infinite ease-in-out;
       margin-top: 8px;
     }
+
     @keyframes pulseDistinction {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.04); filter: brightness(1.15); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6); }
+
+      0%,
+      100% {
+        transform: scale(1);
+        filter: brightness(1);
+      }
+
+      50% {
+        transform: scale(1.04);
+        filter: brightness(1.15);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- TOP HEADER -->
@@ -48,7 +64,8 @@
         </div>
       </div>
       <div class="nav-actions">
-        <button type="button" class="btn-secondary" onclick="window.location.href='student.html'">Student Workspace</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='student.html'">Student
+          Workspace</button>
         <button type="button" class="btn-secondary" onclick="window.location.href='reports.html'">All Reports</button>
         <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
       </div>
@@ -62,7 +79,8 @@
         <div>
           <span class="day-badge" id="resultDayBadge">Day 1 Assessment</span>
           <h1 id="resultStudentName">Student Result</h1>
-          <p id="resultMeta">Batch: <span id="resultYear">Final Year</span> | ID: <span id="resultUsername">--</span> | Submitted: <span id="resultDate">--</span></p>
+          <p id="resultMeta">Batch: <span id="resultYear">Final Year</span> | ID: <span id="resultUsername">--</span> |
+            Submitted: <span id="resultDate">--</span></p>
         </div>
         <div class="score-circle-wrap">
           <div class="score-circle" id="percentageCircle">
@@ -93,21 +111,28 @@
     </section>
 
     <!-- NEXT DAY PROGRESSION CARD -->
-    <section class="card" id="nextDayCard" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1px solid #334155; margin-bottom: 24px; padding: 22px 24px;">
+    <section class="card" id="nextDayCard"
+      style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1px solid #334155; margin-bottom: 24px; padding: 22px 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div style="flex: 1; min-width: 260px;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-            <span class="day-badge" style="background: #16a34a; color: #ffffff; font-weight: 600;">✅ Day <span id="completedDayNum">1</span> Finished</span>
-            <span class="day-badge" style="background: #2563eb; color: #ffffff; font-weight: 600;">🚀 Day <span id="nextDayNum">2</span> Unlocked</span>
+            <span class="day-badge" style="background: #16a34a; color: #ffffff; font-weight: 600;">✅ Day <span
+                id="completedDayNum">1</span> Finished</span>
+            <span class="day-badge" style="background: #2563eb; color: #ffffff; font-weight: 600;">🚀 Day <span
+                id="nextDayNum">2</span> Unlocked</span>
           </div>
-          <h2 style="color: #ffffff; margin: 0 0 6px 0; font-size: 20px;" id="nextDayTitle">Ready for Day 2 Assessment?</h2>
-          <p style="color: #94a3b8; margin: 0; font-size: 13.5px;">Your test submission has been recorded in MongoDB. You can launch your next day's assessment immediately or return to your student workspace.</p>
+          <h2 style="color: #ffffff; margin: 0 0 6px 0; font-size: 20px;" id="nextDayTitle">Ready for Day 2 Assessment?
+          </h2>
+          <p style="color: #94a3b8; margin: 0; font-size: 13.5px;">Your test submission has been recorded in MongoDB.
+            You can launch your next day's assessment immediately or return to your student workspace.</p>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-          <button type="button" class="btn-secondary" onclick="window.location.href='student.html'" style="background: #334155; color: #ffffff; border-color: #475569;">
+          <button type="button" class="btn-secondary" onclick="window.location.href='student.html'"
+            style="background: #334155; color: #ffffff; border-color: #475569;">
             ⬅ Student Workspace
           </button>
-          <button type="button" id="nextDayLaunchBtn" class="btn-primary" onclick="proceedToNextDay()" style="font-size: 15px; padding: 10px 22px; font-weight: 600; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+          <button type="button" id="nextDayLaunchBtn" class="btn-primary" onclick="proceedToNextDay()"
+            style="font-size: 15px; padding: 10px 22px; font-weight: 600; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
             🚀 Start Day <span id="btnNextDayNum">2</span> Assessment
           </button>
         </div>
@@ -274,12 +299,50 @@
 
         let codeSection = '';
         if (type === 'CODING') {
+          const studentCode = item.studentAnswer || '// No code provided';
           codeSection = `
             <div class="code-review-wrap">
-              <span class="code-review-label">Your Submitted Code:</span>
-              <pre class="code-block"><code>${escapeHTML(item.studentAnswer || 'No code provided')}</code></pre>
+              <div class="ide-wrapper" style="margin-top: 10px;">
+                <!-- Top Bar -->
+                <div class="ide-top-header">
+                  <div class="ide-tabs-group">
+                    <div class="ide-tab">
+                      <span class="ide-tab-icon">☕</span>
+                      <span>Main.java</span>
+                    </div>
+                    <span class="ide-lang-badge">Java 17/21</span>
+                  </div>
+                  <div class="ide-controls">
+                    <button type="button" class="btn-ide-run" id="result_btn_run_${idx}" onclick="runCodeInResult(${idx})">
+                      ▶ Run Code
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Code Textarea -->
+                <textarea 
+                  class="ide-code-area" 
+                  id="result_code_${idx}" 
+                  spellcheck="false" 
+                  rows="10"
+                >${escapeHTML(studentCode)}</textarea>
+
+                <!-- Terminal Output -->
+                <div class="ide-console-section">
+                  <div class="ide-console-header">
+                    <div class="ide-console-title">
+                      <span class="ide-dot dot-red"></span>
+                      <span class="ide-dot dot-yellow"></span>
+                      <span class="ide-dot dot-green"></span>
+                      <span>Interactive Console / Output Terminal</span>
+                    </div>
+                    <div class="ide-status-pill" id="result_status_${idx}">Ready</div>
+                  </div>
+                  <div class="ide-console-output" id="result_output_${idx}">Click "▶ Run Code" above to execute and test your solution live.</div>
+                </div>
+              </div>
             </div>
-            ${item.evaluationNotes ? `<div class="eval-notes"><b>Evaluation Details:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
+            ${item.evaluationNotes ? `<div class="eval-notes" style="margin-top:10px;"><b>Evaluation Details:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
           `;
         } else {
           codeSection = `
@@ -309,6 +372,145 @@
       });
     }
 
+    function formatTerminalSession(rawOutput, inputs) {
+      let clean = rawOutput.split('Exception in thread')[0];
+      let remaining = clean;
+      const steps = [];
+
+      for (let i = 0; i < inputs.length; i++) {
+        const inputVal = inputs[i];
+        if (!remaining) break;
+        const colonIdx = remaining.indexOf(':');
+        let prompt = '';
+        if (colonIdx !== -1) {
+          prompt = remaining.substring(0, colonIdx + 1);
+          remaining = remaining.substring(colonIdx + 1);
+        } else {
+          prompt = remaining;
+          remaining = '';
+        }
+        steps.push({ prompt: prompt.trimStart(), input: inputVal });
+      }
+
+      let finalOutput = '';
+      let activePrompt = '';
+
+      if (remaining.trim()) {
+        if (rawOutput.includes('NoSuchElementException')) {
+          activePrompt = remaining.trimStart();
+        } else {
+          finalOutput = remaining.trimStart();
+        }
+      }
+
+      return { steps, activePrompt, finalOutput };
+    }
+
+    function renderTerminalHTML(session, isWaiting, inputId) {
+      let html = '';
+      session.steps.forEach(step => {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(step.prompt)}</span> <span class="term-entered-val">${escapeHTML(step.input)}</span></div>`;
+      });
+
+      if (isWaiting) {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(session.activePrompt)}</span> <span id="${inputId}" class="term-same-line-input" contenteditable="true" spellcheck="false"></span></div>`;
+      } else if (session.finalOutput) {
+        html += `<div class="term-final-output">${escapeHTML(session.finalOutput)}</div>`;
+      }
+      return html;
+    }
+
+    async function runCodeInResult(idx, accumulatedInputs = []) {
+      const codeEl = document.getElementById(`result_code_${idx}`);
+      const outputEl = document.getElementById(`result_output_${idx}`);
+      const statusPill = document.getElementById(`result_status_${idx}`);
+      const btnRun = document.getElementById(`result_btn_run_${idx}`);
+
+      if (!codeEl || !outputEl || !statusPill) return;
+
+      const code = codeEl.value.trim();
+      if (!code) {
+        outputEl.innerHTML = '<span class="error-text">Code cannot be empty.</span>';
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ No Code';
+        return;
+      }
+
+      if (btnRun) {
+        btnRun.disabled = true;
+        btnRun.innerHTML = '⏳ Compiling...';
+      }
+
+      statusPill.className = 'ide-status-pill ide-status-running';
+      statusPill.textContent = 'Running...';
+
+      if (accumulatedInputs.length === 0) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = '<span class="text-muted">Compiling and running Java code...</span>';
+      }
+
+      const payloadInput = accumulatedInputs.join('\n');
+      const startTime = performance.now();
+
+      try {
+        const result = await API.compileCode(code, payloadInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const rawOutput = result.output || '(No output returned)';
+          const session = formatTerminalSession(rawOutput, accumulatedInputs);
+          outputEl.innerHTML = renderTerminalHTML(session, false, '');
+          outputEl.className = 'ide-console-output success-text';
+          statusPill.className = 'ide-status-pill ide-status-success';
+          statusPill.textContent = `✔ Success (${elapsed}s)`;
+        } else if (result && result.output && result.output.includes('NoSuchElementException')) {
+          const session = formatTerminalSession(result.output, accumulatedInputs);
+          statusPill.className = 'ide-status-pill ide-status-running';
+          statusPill.textContent = 'Waiting for input...';
+
+          outputEl.className = 'ide-console-output';
+          outputEl.innerHTML = renderTerminalHTML(session, true, `result_inline_input_${idx}`);
+
+          const inlineSpan = document.getElementById(`result_inline_input_${idx}`);
+          if (inlineSpan) {
+            inlineSpan.focus();
+            try {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(inlineSpan);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } catch (e) { }
+
+            inlineSpan.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const enteredVal = inlineSpan.innerText.trim();
+                const nextInputs = [...accumulatedInputs, enteredVal];
+                runCodeInResult(idx, nextInputs);
+              }
+            });
+          }
+        } else {
+          outputEl.innerHTML = escapeHTML((result && result.output) ? result.output : 'Compilation / Runtime Error');
+          outputEl.className = 'ide-console-output error-text';
+          statusPill.className = 'ide-status-pill ide-status-error';
+          statusPill.textContent = `✖ Error (${elapsed}s)`;
+        }
+      } catch (err) {
+        console.error('Compiler execution failed:', err);
+        outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Unknown network error')}</span>`;
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ Network Error';
+      } finally {
+        if (btnRun) {
+          btnRun.disabled = false;
+          btnRun.innerHTML = '▶ Run Code';
+        }
+      }
+    }
+
     function proceedToNextDay() {
       if (!currentResultData) return;
       const currentDay = Number(currentResultData.day) || 1;
@@ -325,7 +527,7 @@
         const duration = 4500;
         const animationEnd = Date.now() + duration;
 
-        const interval = setInterval(function() {
+        const interval = setInterval(function () {
           const timeLeft = animationEnd - Date.now();
           if (timeLeft <= 0) {
             return clearInterval(interval);
@@ -502,12 +704,12 @@
         [
           { content: `Score: ${sub.score} / ${sub.total}`, styles: { fontStyle: 'bold' } },
           { content: `Percentage: ${sub.percentage}%`, styles: { fontStyle: 'bold' } },
-          { 
+          {
             content: `Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')}`,
-            styles: { 
-              fontStyle: 'bold', 
-              textColor: isPassed ? [22, 163, 74] : [220, 38, 38] 
-            } 
+            styles: {
+              fontStyle: 'bold',
+              textColor: isPassed ? [22, 163, 74] : [220, 38, 38]
+            }
           }
         ]
       ];
@@ -531,7 +733,7 @@
       const tableRows = sheet.map((item, idx) => {
         const type = String(item.questionType || 'MCQ').toUpperCase();
         const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
-        
+
         let qContent = `${item.question || 'Question'}\n`;
         if (item.optionA || item.optionB || item.optionC || item.optionD) {
           qContent += `\nA) ${item.optionA || '-'}\nB) ${item.optionB || '-'}\nC) ${item.optionC || '-'}\nD) ${item.optionD || '-'}`;
@@ -593,7 +795,7 @@
           4: { cellWidth: 100 },
           5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
         },
-        didParseCell: function(data) {
+        didParseCell: function (data) {
           if (data.section === 'body' && data.column.index === 5) {
             if (String(data.cell.raw).startsWith('Correct')) {
               data.cell.styles.textColor = [22, 163, 74];
@@ -635,4 +837,5 @@
     window.addEventListener('DOMContentLoaded', loadResult);
   </script>
 </body>
+
 </html>

@@ -4,7 +4,7 @@ const User = require('../models/User');
 const Question = require('../models/Question');
 const Submission = require('../models/Submission');
 
-// GET /api/stats - High level portal metrics
+// GET /api/stats - High level portal metrics directly from MongoDB
 router.get('/', async (req, res) => {
   try {
     const [totalQuestions, totalStudents, totalSubmissions, distinctDays] = await Promise.all([
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
       success: true,
       stats: {
         totalQuestions,
-        totalDays: distinctDays.length,
+        totalDays: distinctDays.length || 41,
         totalStudents,
         totalSubmissions,
         avgPercentage,
@@ -43,10 +43,10 @@ router.get('/', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Stats fetch error:', error);
+    console.error('Stats fetch error from MongoDB:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch dashboard statistics.',
+      message: 'Failed to fetch dashboard statistics from MongoDB.',
       error: error.message,
     });
   }

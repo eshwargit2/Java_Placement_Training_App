@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Question = require('../models/Question');
 const { evaluateMCQ, evaluateJavaCode } = require('../utils/evaluator');
 
-// POST /api/assessments/submit - Submit and grade an assessment, save to MongoDB
+// POST /api/assessments/submit - Submit and grade an assessment, save directly to MongoDB
 router.post('/submit', async (req, res) => {
   try {
     const {
@@ -24,9 +24,10 @@ router.post('/submit', async (req, res) => {
     }
 
     const dayNum = parseInt(day, 10) || 1;
+    const cleanUsername = String(studentUsername).trim().toLowerCase();
 
-    // Fetch official questions from MongoDB for this day
-    const officialQuestions = await Question.find({ day: dayNum }).sort({ questionNumber: 1 });
+    // 1. Fetch official questions from MongoDB for this day
+    const officialQuestions = await Question.find({ day: dayNum }).sort({ questionNumber: 1 }).lean();
 
     let score = 0;
     let total = 0;
@@ -51,7 +52,7 @@ router.post('/submit', async (req, res) => {
       for (let i = 0; i < officialQuestions.length; i++) {
         const q = officialQuestions[i];
         const type = String(q.questionType || 'MCQ').trim().toUpperCase();
-        
+
         let rawAnswer =
           studentAnswerMap[String(q._id)] ||
           studentAnswerMap[String(q.question).trim().toLowerCase()] ||
@@ -93,7 +94,6 @@ router.post('/submit', async (req, res) => {
             evaluationNotes: evalRes.notes,
           });
         } else {
-          // Default evaluation
           const evalRes = evaluateMCQ(rawAnswer, q.correctAnswer);
           score += evalRes.score;
           answerSheet.push({
@@ -112,7 +112,6 @@ router.post('/submit', async (req, res) => {
         }
       }
     } else if (Array.isArray(answers) && answers.length > 0) {
-      // Fallback: evaluate submitted items directly if no official questions in DB
       for (let i = 0; i < answers.length; i++) {
         const ans = answers[i];
         const type = String(ans.questionType || ans.type || 'MCQ').trim().toUpperCase();
@@ -153,18 +152,17 @@ router.post('/submit', async (req, res) => {
     const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
     const passStatus = percentage >= 50 ? 'Passed' : 'Completed';
 
-    // Find student user to ensure fresh profile
-    const studentUser = await User.findOne({
-      username: String(studentUsername).trim().toLowerCase(),
-    });
+    // 2. Fetch student user from MongoDB
+    const studentUser = await User.findOne({ username: cleanUsername });
 
     const regNum = req.body.registerNumber || (studentUser ? studentUser.registerNumber : '') || '';
     const dept = req.body.department || (studentUser ? studentUser.department : '') || '';
 
+    // 3. Save Submission directly to MongoDB
     const submission = await Submission.create({
       studentId: studentUser ? studentUser._id : null,
       studentName: studentName || (studentUser ? studentUser.name : 'Student'),
-      studentUsername: String(studentUsername).trim().toLowerCase(),
+      studentUsername: cleanUsername,
       registerNumber: regNum,
       department: dept,
       studentYear: studentYear || (studentUser ? studentUser.year : 'Final Year'),
@@ -177,51 +175,32 @@ router.post('/submit', async (req, res) => {
       submittedAt: new Date(),
     });
 
-    // Auto-advance student's assignedDay to dayNum + 1 if student exists and currently on dayNum
-    let nextAssignedDay = dayNum;
-    if (studentUser) {
-      if (studentUser.assignedDay <= dayNum && dayNum < 41) {
-        nextAssignedDay = dayNum + 1;
-        await User.findByIdAndUpdate(studentUser._id, {
-          $set: { assignedDay: nextAssignedDay },
-        });
-        console.log(`Auto-advanced ${studentUser.username} to Day ${nextAssignedDay}`);
-      } else {
-        nextAssignedDay = studentUser.assignedDay;
-      }
-    }
+    // 4. Advance student's assigned day in MongoDB (e.g. Day 1 -> Day 2)
+    const nextAssignedDay = Math.min(Math.max((studentUser && studentUser.assignedDay) || 1, dayNum + 1), 41);
+    await User.findOneAndUpdate(
+      { username: cleanUsername },
+      { $set: { assignedDay: nextAssignedDay } }
+    );
+    console.log(`✅ Saved submission to MongoDB & updated ${cleanUsername} to Day ${nextAssignedDay}`);
 
     return res.status(201).json({
       success: true,
-      message: 'Assessment submitted and evaluated successfully.',
+      message: 'Assessment submitted and evaluated successfully in MongoDB.',
       submissionId: submission._id,
       newAssignedDay: nextAssignedDay,
-      submission: {
-        id: submission._id,
-        _id: submission._id,
-        day: submission.day,
-        score: submission.score,
-        total: submission.total,
-        percentage: submission.percentage,
-        status: submission.status,
-        studentName: submission.studentName,
-        studentUsername: submission.studentUsername,
-        studentYear: submission.studentYear,
-        submittedAt: submission.submittedAt,
-        answerSheet: submission.answerSheet,
-      },
+      submission,
     });
   } catch (error) {
     console.error('Assessment submission error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to submit assessment.',
+      message: 'Failed to submit assessment to MongoDB.',
       error: error.message,
     });
   }
 });
 
-// GET /api/assessments - Get all submissions (support filter by studentUsername / day)
+// GET /api/assessments - Get all submissions from MongoDB (support filter by studentUsername / day)
 router.get('/', async (req, res) => {
   try {
     const { studentUsername, day, status } = req.query;
@@ -237,7 +216,7 @@ router.get('/', async (req, res) => {
       filter.status = status;
     }
 
-    const submissions = await Submission.find(filter).sort({ submittedAt: -1 });
+    const submissions = await Submission.find(filter).sort({ submittedAt: -1 }).lean();
 
     return res.json({
       success: true,
@@ -248,20 +227,21 @@ router.get('/', async (req, res) => {
     console.error('Fetch submissions error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch assessment reports.',
+      message: 'Failed to fetch assessment reports from MongoDB.',
       error: error.message,
     });
   }
 });
 
-// GET /api/assessments/:id - Get single submission with full answer sheet
+// GET /api/assessments/:id - Get single submission with full answer sheet from MongoDB
 router.get('/:id', async (req, res) => {
   try {
     const submission = await Submission.findById(req.params.id).lean();
+
     if (!submission) {
       return res.status(404).json({
         success: false,
-        message: 'Submission not found.',
+        message: 'Submission not found in MongoDB.',
       });
     }
 
@@ -292,20 +272,20 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch submission details.',
+      message: 'Failed to fetch submission details from MongoDB.',
       error: error.message,
     });
   }
 });
 
-// DELETE /api/assessments/:id - Delete a submission (Admin) and update student's assigned progress
+// DELETE /api/assessments/:id - Delete a submission from MongoDB and update student's assigned progress
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Submission.findByIdAndDelete(req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: 'Submission not found.',
+        message: 'Submission not found in MongoDB.',
       });
     }
 
@@ -313,9 +293,7 @@ router.delete('/:id', async (req, res) => {
     let newAssignedDay = 1;
     const studentUsername = deleted.studentUsername ? String(deleted.studentUsername).trim().toLowerCase() : '';
     if (studentUsername) {
-      const remainingSubmissions = await Submission.find({
-        studentUsername,
-      });
+      const remainingSubmissions = await Submission.find({ studentUsername });
 
       if (remainingSubmissions.length > 0) {
         const maxCompletedDay = remainingSubmissions.reduce((max, s) => Math.max(max, Number(s.day) || 1), 0);
@@ -328,12 +306,12 @@ router.delete('/:id', async (req, res) => {
         { username: studentUsername },
         { $set: { assignedDay: newAssignedDay } }
       );
-      console.log(`Updated ${studentUsername} assigned day to Day ${newAssignedDay} after submission deletion.`);
+      console.log(`Updated ${studentUsername} assigned day to Day ${newAssignedDay} in MongoDB.`);
     }
 
     return res.json({
       success: true,
-      message: 'Submission deleted successfully and student progress updated.',
+      message: 'Submission deleted successfully from MongoDB.',
       deletedSubmissionId: deleted._id,
       studentUsername,
       newAssignedDay,
@@ -341,7 +319,7 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Failed to delete submission.',
+      message: 'Failed to delete submission from MongoDB.',
       error: error.message,
     });
   }

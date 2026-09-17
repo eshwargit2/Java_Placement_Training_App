@@ -2077,3 +2077,556 @@ tbody tr:hover {
   background: #f1f5f9;
   color: #334155;
 }
+
+/* =====================================================
+   LIVE JAVA ONLINE CODE EDITOR & COMPILER COMPONENT
+===================================================== */
+.ide-wrapper {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  display: flex;
+  flex-direction: column;
+}
+
+.ide-top-header {
+  background: #090d16;
+  border-bottom: 1px solid #1e293b;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.ide-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ide-tab {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 6px 14px;
+  border-radius: 6px 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 2px solid var(--java-orange);
+}
+
+.ide-tab-icon {
+  font-size: 14px;
+}
+
+.ide-lang-badge {
+  background: rgba(231, 111, 0, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(231, 111, 0, 0.3);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.ide-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ide-btn-tool {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-family: var(--font);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.ide-btn-tool:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.ide-body-container {
+  display: flex;
+  height: 250px;
+  background: #0b0f19;
+  position: relative;
+  overflow: hidden;
+}
+
+.ide-gutter {
+  width: 44px;
+  height: 100%;
+  background: #080c14;
+  color: #475569;
+  padding: 14px 8px 14px 0;
+  text-align: right;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 13.5px !important;
+  line-height: 22px !important;
+  user-select: none;
+  border-right: 1px solid #1e293b;
+  overflow: hidden;
+  white-space: pre;
+  box-sizing: border-box;
+}
+
+.ide-editor-stage {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  background: #0b0f19;
+  overflow: hidden;
+}
+
+.ide-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 !important;
+  padding: 14px 16px !important;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 13.5px !important;
+  line-height: 22px !important;
+  tab-size: 4 !important;
+  -moz-tab-size: 4 !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  color: #f1f5f9 !important;
+  background: transparent !important;
+  border: none !important;
+  box-sizing: border-box !important;
+  z-index: 1;
+}
+
+.ide-editor-stage .ide-code-textarea {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 14px 16px !important;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 13.5px !important;
+  line-height: 22px !important;
+  tab-size: 4 !important;
+  -moz-tab-size: 4 !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  overflow: auto !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  resize: none !important;
+  caret-color: #38bdf8 !important;
+  box-sizing: border-box !important;
+  z-index: 2;
+}
+
+.ide-editor-stage .ide-code-textarea::selection {
+  background: rgba(56, 189, 248, 0.3) !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.ide-code-textarea,
+.ide-code-area,
+textarea.ide-code-area {
+  flex: 1;
+  background: #0b0f19 !important;
+  color: #f1f5f9 !important;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 13.5px !important;
+  line-height: 22px !important;
+  padding: 14px 16px !important;
+  border: none !important;
+  outline: none !important;
+  resize: vertical !important;
+  min-height: 180px !important;
+  white-space: pre !important;
+  tab-size: 4 !important;
+  -moz-tab-size: 4 !important;
+  overflow-x: auto !important;
+  caret-color: #38bdf8 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Java Syntax Token Colors (VS Code / IntelliJ Darcula Theme) */
+.hl-keyword {
+  color: #c084fc !important; /* purple */
+  font-weight: 600;
+}
+
+.hl-type {
+  color: #60a5fa !important; /* azure blue */
+  font-weight: 600;
+}
+
+.hl-class {
+  color: #38bdf8 !important; /* sky cyan */
+  font-weight: 600;
+}
+
+.hl-method {
+  color: #fde047 !important; /* yellow */
+}
+
+.hl-string {
+  color: #4ade80 !important; /* emerald green */
+}
+
+.hl-number {
+  color: #fb923c !important; /* amber/orange */
+}
+
+.hl-comment {
+  color: #64748b !important; /* muted slate */
+  font-style: italic;
+}
+
+.hl-annotation {
+  color: #f472b6 !important; /* pink */
+}
+
+.hl-operator {
+  color: #94a3b8 !important; /* light slate */
+}
+
+.hl-ident {
+  color: #f1f5f9 !important; /* clean white */
+}
+
+.ide-code-textarea::selection,
+.ide-code-area::selection,
+textarea.ide-code-area::selection {
+  background: rgba(56, 189, 248, 0.3) !important;
+}
+
+.ide-code-textarea:focus,
+.ide-code-area:focus,
+textarea.ide-code-area:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+.code-review-wrap {
+  margin-top: 10px;
+  background: #070b13;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.code-review-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.code-block,
+pre.code-block {
+  background: #0b0f19 !important;
+  color: #38bdf8 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  margin: 6px 0 !important;
+}
+
+.ide-controls-bar {
+  background: #090d16;
+  border-top: 1px solid #1e293b;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ide-left-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.ide-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-ide-run,
+.ide-btn-run {
+  background: linear-gradient(135deg, #e76f00 0%, #c45d00 100%);
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px;
+  padding: 7px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(231, 111, 0, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-ide-run:hover:not(:disabled),
+.ide-btn-run:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 111, 0, 0.5);
+}
+
+.btn-ide-run:disabled,
+.ide-btn-run:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ide-console-section {
+  background: #05080f;
+  border-top: 1px solid #1e293b;
+}
+
+
+.ide-console-header {
+  background: #070b13;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #131d2e;
+}
+
+.ide-console-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ide-status-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ide-status-idle {
+  background: #1e293b;
+  color: #94a3b8;
+}
+
+.ide-status-running {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.ide-status-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.ide-status-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ide-terminal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.ide-console-output {
+  padding: 14px 16px;
+  color: #cbd5e1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 220px;
+  overflow-y: auto;
+  min-height: 48px;
+}
+
+.ide-console-output.success-text {
+  color: #4ade80;
+}
+
+.ide-console-output.error-text {
+  color: #fca5a5;
+}
+
+/* Same-line terminal prompt & seamless raw inline terminal typing */
+.term-prompt-text,
+.term-prompt {
+  color: #4ade80;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
+  font-weight: 600;
+  display: inline;
+}
+
+.term-session-line {
+  margin-bottom: 2px;
+  line-height: 1.6;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
+}
+
+.term-raw-terminal-input,
+.term-same-line-input,
+.term-inline-typing {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #fb923c !important; /* amber/orange typed text */
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  display: inline-block !important;
+  min-width: 250px !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  caret-color: #38bdf8 !important; /* vivid cyan blinking cursor */
+  vertical-align: baseline !important;
+  line-height: inherit !important;
+}
+
+.term-entered-val {
+  color: #fb923c;
+  font-weight: 600;
+  display: inline;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
+}
+
+.term-final-output {
+  color: #4ade80;
+  white-space: pre-wrap;
+  margin-top: 2px;
+  line-height: 1.6;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
+}
+
+/* Spinner for compile button */
+.ide-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: ideSpin 0.7s linear infinite;
+}
+
+@keyframes ideSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modal Code Editors & Black Background Customizations */
+.modal-dialog {
+  max-width: 900px !important;
+  width: 95% !important;
+}
+
+.modal-body .ide-wrapper {
+  background: #0f172a !important;
+  border: 1px solid #1e293b !important;
+}
+
+.modal-body .ide-top-header {
+  background: #090d16 !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+.modal-body textarea.ide-code-area,
+.modal-body .ide-code-area,
+.modal-body .code-block,
+.modal-body pre.code-block {
+  background: #0b0f19 !important;
+  color: #f1f5f9 !important;
+  border: 1px solid #1e293b !important;
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace !important;
+}
+
+.modal-body .ide-console-section {
+  background: #05080f !important;
+  border-top: 1px solid #1e293b !important;
+}
+
+.modal-body .ide-console-header {
+  background: #070b13 !important;
+  border-bottom: 1px solid #131d2e !important;
+}
+
+.modal-body .ide-console-output {
+  background: #05080f !important;
+}
+
+background: #05080f !important;
+border-top: 1px solid #1e293b !important;
+}
+
+.modal-body .ide-console-header {
+  background: #070b13 !important;
+  border-bottom: 1px solid #131d2e !important;
+}
+
+.modal-body .ide-console-output {
+  background: #05080f !important;
+}

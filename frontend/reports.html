@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Java Placement Assessment Portal - Batch and Student Performance Analytics, Scorecards, and Reports.">
+  <meta name="description"
+    content="Java Placement Assessment Portal - Batch and Student Performance Analytics, Scorecards, and Reports.">
   <title>Assessment Reports — Java Placement Portal</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="apple-touch-icon" href="assets/logo.png">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
+
 <body>
 
   <!-- TOP HEADER -->
@@ -27,7 +32,8 @@
         </div>
       </div>
       <div class="nav-actions">
-        <button type="button" class="btn-secondary" id="backDashboardBtn" onclick="goBackDashboard()">Back to Dashboard</button>
+        <button type="button" class="btn-secondary" id="backDashboardBtn" onclick="goBackDashboard()">Back to
+          Dashboard</button>
         <button type="button" class="btn-danger" onclick="logoutUser()">Logout</button>
       </div>
     </div>
@@ -36,12 +42,16 @@
   <main class="page-container">
     <!-- FILTERS ROW -->
     <section class="card filter-card">
-      <div class="filter-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end;">
+      <div class="filter-grid"
+        style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end;">
         <div class="form-group" id="studentFilterGroup" style="position: relative;">
           <label for="filterStudent">Filter by Student (Search)</label>
           <div style="position: relative; display: flex; align-items: center;">
-            <input type="text" id="filterStudent" placeholder="Search name, username, reg no..." oninput="applyFilters()" style="padding-right: 28px; width: 100%;">
-            <button type="button" id="clearStudentSearchBtn" onclick="clearStudentSearch()" style="display: none; position: absolute; right: 8px; background: none; border: none; font-size: 14px; cursor: pointer; color: #94a3b8;" title="Clear search">&times;</button>
+            <input type="text" id="filterStudent" placeholder="Search name, username, reg no..."
+              oninput="applyFilters()" style="padding-right: 28px; width: 100%;">
+            <button type="button" id="clearStudentSearchBtn" onclick="clearStudentSearch()"
+              style="display: none; position: absolute; right: 8px; background: none; border: none; font-size: 14px; cursor: pointer; color: #94a3b8;"
+              title="Clear search">&times;</button>
           </div>
         </div>
 
@@ -70,14 +80,19 @@
         </div>
 
         <div class="form-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button type="button" class="btn-secondary btn-sm" onclick="resetAllFilters()" title="Reset All Filters">🔄 Reset</button>
-          <button type="button" id="btnExportCSV" class="btn-secondary" onclick="exportToCSV()" title="Download CSV Spreadsheet">📥 Export CSV</button>
-          <button type="button" id="btnExportSummaryPDF" class="btn-secondary" onclick="exportToPDF()" title="Download Summary PDF Table">📄 Export Summary PDF</button>
-          <button type="button" id="btnExportDetailedPDF" class="btn-primary" onclick="exportAllDetailsPDF()" title="Download Full PDF with All Questions, Options, Answers & Code">📑 Export All Details PDF</button>
+          <button type="button" class="btn-secondary btn-sm" onclick="resetAllFilters()" title="Reset All Filters">🔄
+            Reset</button>
+          <button type="button" id="btnExportCSV" class="btn-secondary" onclick="exportToCSV()"
+            title="Download CSV Spreadsheet">📥 Export CSV</button>
+          <button type="button" id="btnExportSummaryPDF" class="btn-secondary" onclick="exportToPDF()"
+            title="Download Summary PDF Table">📄 Export Summary PDF</button>
+          <button type="button" id="btnExportDetailedPDF" class="btn-primary" onclick="exportAllDetailsPDF()"
+            title="Download Full PDF with All Questions, Options, Answers & Code">📑 Export All Details PDF</button>
         </div>
       </div>
 
-      <div id="activeFilterBadge" style="margin-top: 12px; font-size: 13px; color: #475569; display: flex; align-items: center; gap: 8px;">
+      <div id="activeFilterBadge"
+        style="margin-top: 12px; font-size: 13px; color: #475569; display: flex; align-items: center; gap: 8px;">
         <span class="day-badge" id="activeFilterText">Showing All Submissions</span>
       </div>
     </section>
@@ -132,8 +147,10 @@
       <div class="modal-body" id="modalAnswerSheet">
         <!-- Rendered dynamically -->
       </div>
-      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <button type="button" class="btn-primary btn-sm" onclick="exportSingleStudentPDF()">📄 Download Student Report (PDF)</button>
+      <div class="modal-footer"
+        style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <button type="button" class="btn-primary btn-sm" onclick="exportSingleStudentPDF()">📄 Download Student Report
+          (PDF)</button>
         <button type="button" class="btn-secondary" onclick="closeInspectModal()">Close</button>
       </div>
     </div>
@@ -411,12 +428,50 @@
 
             let codeSection = '';
             if (type === 'CODING') {
+              const studentCode = item.studentAnswer || '// No code submitted';
               codeSection = `
                 <div class="code-review-wrap">
-                  <span class="code-review-label">Submitted Java Code:</span>
-                  <pre class="code-block"><code>${escapeHTML(item.studentAnswer || 'No code')}</code></pre>
+                  <div class="ide-wrapper" style="margin-top: 10px;">
+                    <!-- Top Bar -->
+                    <div class="ide-top-header">
+                      <div class="ide-tabs-group">
+                        <div class="ide-tab">
+                          <span class="ide-tab-icon">☕</span>
+                          <span>Main.java</span>
+                        </div>
+                        <span class="ide-lang-badge">Java 17/21</span>
+                      </div>
+                      <div class="ide-controls">
+                        <button type="button" class="btn-ide-run" id="admin_btn_run_${idx}" onclick="runAdminInspectCode(${idx})">
+                          ▶ Run Code
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Code Textarea -->
+                    <textarea 
+                      class="ide-code-area" 
+                      id="admin_code_${idx}" 
+                      spellcheck="false" 
+                      rows="10"
+                    >${escapeHTML(studentCode)}</textarea>
+
+                    <!-- Terminal Output -->
+                    <div class="ide-console-section">
+                      <div class="ide-console-header">
+                        <div class="ide-console-title">
+                          <span class="ide-dot dot-red"></span>
+                          <span class="ide-dot dot-yellow"></span>
+                          <span class="ide-dot dot-green"></span>
+                          <span>Interactive Console / Output Terminal</span>
+                        </div>
+                        <div class="ide-status-pill" id="admin_status_${idx}">Ready</div>
+                      </div>
+                      <div class="ide-console-output" id="admin_output_${idx}">Click "▶ Run Code" above to execute and test the student's Java code live.</div>
+                    </div>
+                  </div>
                 </div>
-                ${item.evaluationNotes ? `<div class="eval-notes"><b>Evaluation Notes:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
+                ${item.evaluationNotes ? `<div class="eval-notes" style="margin-top:10px;"><b>Evaluation Notes:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
               `;
             } else {
               codeSection = `
@@ -448,6 +503,146 @@
         container.innerHTML = '<p class="error-msg">Failed to load submission.</p>';
       }
     }
+
+    function formatTerminalSession(rawOutput, inputs) {
+      let clean = rawOutput.split('Exception in thread')[0];
+      let remaining = clean;
+      const steps = [];
+
+      for (let i = 0; i < inputs.length; i++) {
+        const inputVal = inputs[i];
+        if (!remaining) break;
+        const colonIdx = remaining.indexOf(':');
+        let prompt = '';
+        if (colonIdx !== -1) {
+          prompt = remaining.substring(0, colonIdx + 1);
+          remaining = remaining.substring(colonIdx + 1);
+        } else {
+          prompt = remaining;
+          remaining = '';
+        }
+        steps.push({ prompt: prompt.trimStart(), input: inputVal });
+      }
+
+      let finalOutput = '';
+      let activePrompt = '';
+
+      if (remaining.trim()) {
+        if (rawOutput.includes('NoSuchElementException')) {
+          activePrompt = remaining.trimStart();
+        } else {
+          finalOutput = remaining.trimStart();
+        }
+      }
+
+      return { steps, activePrompt, finalOutput };
+    }
+
+    function renderTerminalHTML(session, isWaiting, inputId) {
+      let html = '';
+      session.steps.forEach(step => {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(step.prompt)}</span> <span class="term-entered-val">${escapeHTML(step.input)}</span></div>`;
+      });
+
+      if (isWaiting) {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(session.activePrompt)}</span> <span id="${inputId}" class="term-same-line-input" contenteditable="true" spellcheck="false"></span></div>`;
+      } else if (session.finalOutput) {
+        html += `<div class="term-final-output">${escapeHTML(session.finalOutput)}</div>`;
+      }
+      return html;
+    }
+
+    async function runAdminInspectCode(idx, accumulatedInputs = []) {
+      const codeEl = document.getElementById(`admin_code_${idx}`);
+      const outputEl = document.getElementById(`admin_output_${idx}`);
+      const statusPill = document.getElementById(`admin_status_${idx}`);
+      const btnRun = document.getElementById(`admin_btn_run_${idx}`);
+
+      if (!codeEl || !outputEl || !statusPill) return;
+
+      const code = codeEl.value.trim();
+      if (!code) {
+        outputEl.innerHTML = '<span class="error-text">Code cannot be empty.</span>';
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ No Code';
+        return;
+      }
+
+      if (btnRun) {
+        btnRun.disabled = true;
+        btnRun.innerHTML = '⏳ Compiling...';
+      }
+
+      statusPill.className = 'ide-status-pill ide-status-running';
+      statusPill.textContent = 'Running...';
+
+      if (accumulatedInputs.length === 0) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = '<span class="text-muted">Compiling and running Java code...</span>';
+      }
+
+      const payloadInput = accumulatedInputs.join('\n');
+      const startTime = performance.now();
+
+      try {
+        const result = await API.compileCode(code, payloadInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const rawOutput = result.output || '(No output returned)';
+          const session = formatTerminalSession(rawOutput, accumulatedInputs);
+          outputEl.innerHTML = renderTerminalHTML(session, false, '');
+          outputEl.className = 'ide-console-output success-text';
+          statusPill.className = 'ide-status-pill ide-status-success';
+          statusPill.textContent = `✔ Success (${elapsed}s)`;
+        } else if (result && result.output && result.output.includes('NoSuchElementException')) {
+          const session = formatTerminalSession(result.output, accumulatedInputs);
+          statusPill.className = 'ide-status-pill ide-status-running';
+          statusPill.textContent = 'Waiting for input...';
+
+          outputEl.className = 'ide-console-output';
+          outputEl.innerHTML = renderTerminalHTML(session, true, `admin_inline_input_${idx}`);
+
+          const inlineSpan = document.getElementById(`admin_inline_input_${idx}`);
+          if (inlineSpan) {
+            inlineSpan.focus();
+            try {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(inlineSpan);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } catch (e) { }
+
+            inlineSpan.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const enteredVal = inlineSpan.innerText.trim();
+                const nextInputs = [...accumulatedInputs, enteredVal];
+                runAdminInspectCode(idx, nextInputs);
+              }
+            });
+          }
+        } else {
+          outputEl.innerHTML = escapeHTML((result && result.output) ? result.output : 'Compilation / Runtime Error');
+          outputEl.className = 'ide-console-output error-text';
+          statusPill.className = 'ide-status-pill ide-status-error';
+          statusPill.textContent = `✖ Error (${elapsed}s)`;
+        }
+      } catch (err) {
+        console.error('Compiler execution failed:', err);
+        outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Unknown network error')}</span>`;
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ Network Error';
+      } finally {
+        if (btnRun) {
+          btnRun.disabled = false;
+          btnRun.innerHTML = '▶ Run Code';
+        }
+      }
+    }
+
 
     function closeInspectModal() {
       document.getElementById('inspectModal').style.display = 'none';
@@ -541,7 +736,7 @@
       const nowStr = new Date().toLocaleString();
       const passedCount = list.filter(s => s.percentage >= 50).length;
       const passRate = list.length > 0 ? Math.round((passedCount / list.length) * 100) : 0;
-      
+
       let subTitleText = `Generated on: ${nowStr} | Total Records: ${list.length} | Passed: ${passedCount} (${passRate}%)`;
       if (studentQuery) {
         subTitleText += ` | Student: ${studentQuery}`;
@@ -589,7 +784,7 @@
           7: { cellWidth: 65, halign: 'center' },
           8: { cellWidth: 65, halign: 'center' },
         },
-        didParseCell: function(data) {
+        didParseCell: function (data) {
           if (data.section === 'body' && data.column.index === 8) {
             if (data.cell.raw === 'Passed') {
               data.cell.styles.textColor = [22, 163, 74];
@@ -683,7 +878,7 @@
         }
 
         const isPassed = sub.percentage >= 50;
-        
+
         // Candidate Header Banner Box
         doc.setFillColor(241, 245, 249);
         doc.roundedRect(40, startY, 515, 52, 4, 4, 'F');
@@ -697,7 +892,7 @@
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(71, 85, 105);
         doc.text(`Reg No: ${sub.registerNumber || 'N/A'} | Dept: ${sub.department || 'N/A'} | Batch: ${sub.studentYear || 'Final Year'}`, 50, startY + 32);
-        
+
         doc.setFont('helvetica', 'bold');
         doc.text(`Score: ${sub.score}/${sub.total} (${sub.percentage}%) | Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')} | Submitted: ${new Date(sub.submittedAt).toLocaleString()}`, 50, startY + 45);
 
@@ -708,7 +903,7 @@
         const tableRows = sheet.map((item, qIdx) => {
           const type = String(item.questionType || 'MCQ').toUpperCase();
           const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
-          
+
           let qContent = `${item.question || 'Question'}\n`;
           if (item.optionA || item.optionB || item.optionC || item.optionD) {
             qContent += `\nA) ${item.optionA || '-'}\nB) ${item.optionB || '-'}\nC) ${item.optionC || '-'}\nD) ${item.optionD || '-'}`;
@@ -768,7 +963,7 @@
             4: { cellWidth: 100 },
             5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
           },
-          didParseCell: function(data) {
+          didParseCell: function (data) {
             if (data.section === 'body' && data.column.index === 5) {
               if (String(data.cell.raw).startsWith('Correct')) {
                 data.cell.styles.textColor = [22, 163, 74];
@@ -850,12 +1045,12 @@
         [
           { content: `Score: ${sub.score} / ${sub.total}`, styles: { fontStyle: 'bold' } },
           { content: `Percentage: ${sub.percentage}%`, styles: { fontStyle: 'bold' } },
-          { 
+          {
             content: `Status: ${sub.status || (isPassed ? 'PASSED' : 'COMPLETED')}`,
-            styles: { 
-              fontStyle: 'bold', 
-              textColor: isPassed ? [22, 163, 74] : [220, 38, 38] 
-            } 
+            styles: {
+              fontStyle: 'bold',
+              textColor: isPassed ? [22, 163, 74] : [220, 38, 38]
+            }
           }
         ]
       ];
@@ -879,7 +1074,7 @@
       const tableRows = sheet.map((item, idx) => {
         const type = String(item.questionType || 'MCQ').toUpperCase();
         const status = item.status || (item.score >= 1 ? 'Correct' : 'Wrong');
-        
+
         // Build Question + Options string
         let qContent = `${item.question || 'Question'}\n`;
         if (item.optionA || item.optionB || item.optionC || item.optionD) {
@@ -944,7 +1139,7 @@
           4: { cellWidth: 100 },
           5: { cellWidth: 40, halign: 'center', fontStyle: 'bold' }
         },
-        didParseCell: function(data) {
+        didParseCell: function (data) {
           if (data.section === 'body' && data.column.index === 5) {
             if (String(data.cell.raw).startsWith('Correct')) {
               data.cell.styles.textColor = [22, 163, 74];
@@ -984,7 +1179,7 @@
         .replace(/'/g, '&#039;');
     }
 
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       const modal = document.getElementById('inspectModal');
       if (event.target === modal) closeInspectModal();
     };
@@ -1016,4 +1211,5 @@
     });
   </script>
 </body>
+
 </html>

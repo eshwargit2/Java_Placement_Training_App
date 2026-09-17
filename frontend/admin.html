@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Java Placement Assessment Portal - Admin Console for batch performance monitoring and curriculum management.">
+  <meta name="description"
+    content="Java Placement Assessment Portal - Admin Console for batch performance monitoring and curriculum management.">
   <title>Admin Console — Java Placement Portal</title>
   <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="apple-touch-icon" href="assets/logo.png">
@@ -351,12 +352,60 @@
 
             let codingDetails = '';
             if (type === 'CODING') {
+              const defaultTemplate = `import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        // Test Java problem solution
+        
+        scanner.close();
+    }
+}`;
               codingDetails = `
                 <div class="coding-details-box">
                   ${q.codingRequirement ? `<p><b>Requirement:</b> ${escapeHTML(q.codingRequirement)}</p>` : ''}
                   ${q.codingEvaluation ? `<p><b>Full Mark Criteria:</b> ${escapeHTML(q.codingEvaluation)}</p>` : ''}
                   ${q.sampleInput ? `<p><b>Sample Input:</b> <code>${escapeHTML(q.sampleInput)}</code></p>` : ''}
                   ${q.expectedOutput ? `<p><b>Expected Output:</b> <code>${escapeHTML(q.expectedOutput)}</code></p>` : ''}
+
+                  <!-- Live Java Code Runner -->
+                  <div class="ide-wrapper" style="margin-top: 12px;">
+                    <div class="ide-top-header">
+                      <div class="ide-tabs-group">
+                        <div class="ide-tab">
+                          <span class="ide-tab-icon">☕</span>
+                          <span>Main.java</span>
+                        </div>
+                        <span class="ide-lang-badge">Java 17/21</span>
+                      </div>
+                      <div class="ide-controls">
+                        <button type="button" class="btn-ide-run" id="day_btn_run_${idx}" onclick="runDayProblemCode(${idx})">
+                          ▶ Run Code
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea 
+                      class="ide-code-area" 
+                      id="day_code_${idx}" 
+                      spellcheck="false" 
+                      rows="8"
+                    >${escapeHTML(defaultTemplate)}</textarea>
+
+                    <div class="ide-console-section">
+                      <div class="ide-console-header">
+                        <div class="ide-console-title">
+                          <span class="ide-dot dot-red"></span>
+                          <span class="ide-dot dot-yellow"></span>
+                          <span class="ide-dot dot-green"></span>
+                          <span>Interactive Console / Output Terminal</span>
+                        </div>
+                        <div class="ide-status-pill" id="day_status_${idx}">Ready</div>
+                      </div>
+                      <div class="ide-console-output" id="day_output_${idx}">Click "▶ Run Code" to test solution.</div>
+                    </div>
+                  </div>
                 </div>
               `;
             }
@@ -380,6 +429,146 @@
         container.innerHTML = '<p class="error-msg">Failed to load questions from MongoDB.</p>';
       }
     }
+
+    function formatTerminalSession(rawOutput, inputs) {
+      let clean = rawOutput.split('Exception in thread')[0];
+      let remaining = clean;
+      const steps = [];
+
+      for (let i = 0; i < inputs.length; i++) {
+        const inputVal = inputs[i];
+        if (!remaining) break;
+        const colonIdx = remaining.indexOf(':');
+        let prompt = '';
+        if (colonIdx !== -1) {
+          prompt = remaining.substring(0, colonIdx + 1);
+          remaining = remaining.substring(colonIdx + 1);
+        } else {
+          prompt = remaining;
+          remaining = '';
+        }
+        steps.push({ prompt: prompt.trimStart(), input: inputVal });
+      }
+
+      let finalOutput = '';
+      let activePrompt = '';
+
+      if (remaining.trim()) {
+        if (rawOutput.includes('NoSuchElementException')) {
+          activePrompt = remaining.trimStart();
+        } else {
+          finalOutput = remaining.trimStart();
+        }
+      }
+
+      return { steps, activePrompt, finalOutput };
+    }
+
+    function renderTerminalHTML(session, isWaiting, inputId) {
+      let html = '';
+      session.steps.forEach(step => {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(step.prompt)}</span> <span class="term-entered-val">${escapeHTML(step.input)}</span></div>`;
+      });
+
+      if (isWaiting) {
+        html += `<div class="term-session-line"><span class="term-prompt">${escapeHTML(session.activePrompt)}</span> <span id="${inputId}" class="term-same-line-input" contenteditable="true" spellcheck="false"></span></div>`;
+      } else if (session.finalOutput) {
+        html += `<div class="term-final-output">${escapeHTML(session.finalOutput)}</div>`;
+      }
+      return html;
+    }
+
+    async function runDayProblemCode(idx, accumulatedInputs = []) {
+      const codeEl = document.getElementById(`day_code_${idx}`);
+      const outputEl = document.getElementById(`day_output_${idx}`);
+      const statusPill = document.getElementById(`day_status_${idx}`);
+      const btnRun = document.getElementById(`day_btn_run_${idx}`);
+
+      if (!codeEl || !outputEl || !statusPill) return;
+
+      const code = codeEl.value.trim();
+      if (!code) {
+        outputEl.innerHTML = '<span class="error-text">Code cannot be empty.</span>';
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ No Code';
+        return;
+      }
+
+      if (btnRun) {
+        btnRun.disabled = true;
+        btnRun.innerHTML = '⏳ Compiling...';
+      }
+
+      statusPill.className = 'ide-status-pill ide-status-running';
+      statusPill.textContent = 'Running...';
+
+      if (accumulatedInputs.length === 0) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = '<span class="text-muted">Compiling and running Java code...</span>';
+      }
+
+      const payloadInput = accumulatedInputs.join('\n');
+      const startTime = performance.now();
+
+      try {
+        const result = await API.compileCode(code, payloadInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const rawOutput = result.output || '(No output returned)';
+          const session = formatTerminalSession(rawOutput, accumulatedInputs);
+          outputEl.innerHTML = renderTerminalHTML(session, false, '');
+          outputEl.className = 'ide-console-output success-text';
+          statusPill.className = 'ide-status-pill ide-status-success';
+          statusPill.textContent = `✔ Success (${elapsed}s)`;
+        } else if (result && result.output && result.output.includes('NoSuchElementException')) {
+          const session = formatTerminalSession(result.output, accumulatedInputs);
+          statusPill.className = 'ide-status-pill ide-status-running';
+          statusPill.textContent = 'Waiting for input...';
+
+          outputEl.className = 'ide-console-output';
+          outputEl.innerHTML = renderTerminalHTML(session, true, `day_inline_input_${idx}`);
+
+          const inlineSpan = document.getElementById(`day_inline_input_${idx}`);
+          if (inlineSpan) {
+            inlineSpan.focus();
+            try {
+              const range = document.createRange();
+              const sel = window.getSelection();
+              range.selectNodeContents(inlineSpan);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } catch (e) { }
+
+            inlineSpan.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const enteredVal = inlineSpan.innerText.trim();
+                const nextInputs = [...accumulatedInputs, enteredVal];
+                runDayProblemCode(idx, nextInputs);
+              }
+            });
+          }
+        } else {
+          outputEl.innerHTML = escapeHTML((result && result.output) ? result.output : 'Compilation / Runtime Error');
+          outputEl.className = 'ide-console-output error-text';
+          statusPill.className = 'ide-status-pill ide-status-error';
+          statusPill.textContent = `✖ Error (${elapsed}s)`;
+        }
+      } catch (err) {
+        console.error('Compiler execution failed:', err);
+        outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Unknown network error')}</span>`;
+        statusPill.className = 'ide-status-pill ide-status-error';
+        statusPill.textContent = '✖ Network Error';
+      } finally {
+        if (btnRun) {
+          btnRun.disabled = false;
+          btnRun.innerHTML = '▶ Run Code';
+        }
+      }
+    }
+
 
     function closeQuestionModal() {
       document.getElementById('questionModal').style.display = 'none';

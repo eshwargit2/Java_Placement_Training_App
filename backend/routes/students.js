@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Submission = require('../models/Submission');
 
-// GET /api/students - List all students
+// GET /api/students - List all students directly from MongoDB
 router.get('/', async (req, res) => {
   try {
     const [students, submissionCounts] = await Promise.all([
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
       registerNumber: s.registerNumber || '',
       department: s.department || '',
       year: s.year || 'Final Year',
-      assignedDay: s.assignedDay,
+      assignedDay: s.assignedDay || 1,
       profileCompleted: !!s.profileCompleted,
       testsTaken: countMap[s.username] || 0,
       createdAt: s.createdAt,
@@ -48,16 +48,16 @@ router.get('/', async (req, res) => {
       students: studentList,
     });
   } catch (error) {
-    console.error('Fetch students error:', error);
+    console.error('Fetch students error from MongoDB:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch students.',
+      message: 'Failed to fetch students from MongoDB.',
       error: error.message,
     });
   }
 });
 
-// POST /api/students/profile/update - Logged-in student profile update
+// POST /api/students/profile/update - Logged-in student profile update directly in MongoDB
 router.post('/profile/update', async (req, res) => {
   try {
     const { username, name, registerNumber, department, year } = req.body;
@@ -88,7 +88,7 @@ router.post('/profile/update', async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student account not found.',
+        message: 'Student account not found in MongoDB.',
       });
     }
 
@@ -104,7 +104,7 @@ router.post('/profile/update', async (req, res) => {
         registerNumber: student.registerNumber,
         department: student.department,
         year: student.year,
-        assignedDay: student.assignedDay,
+        assignedDay: student.assignedDay || 1,
         profileCompleted: true,
       },
     });
@@ -112,25 +112,33 @@ router.post('/profile/update', async (req, res) => {
     console.error('Update student profile error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to save student profile.',
+      message: 'Failed to save student profile to MongoDB.',
       error: error.message,
     });
   }
 });
 
-// GET /api/students/:username - Get single student by username
+// GET /api/students/:username - Get single student and all their submissions directly from MongoDB
 router.get('/:username', async (req, res) => {
   try {
     const username = String(req.params.username).trim().toLowerCase();
-    const student = await User.findOne({ username, role: 'student' });
+    const student = await User.findOne({ username, role: 'student' }).lean();
+
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found.',
+        message: 'Student not found in MongoDB.',
       });
     }
 
-    const submissions = await Submission.find({ studentUsername: username }).sort({ submittedAt: -1 });
+    const submissions = await Submission.find({ studentUsername: username }).sort({ submittedAt: -1 }).lean();
+
+    // Auto compute assigned day if submissions exist
+    let currentAssignedDay = student.assignedDay || 1;
+    if (submissions && submissions.length > 0) {
+      const maxCompletedDay = submissions.reduce((max, s) => Math.max(max, Number(s.day) || 1), 0);
+      currentAssignedDay = Math.max(currentAssignedDay, maxCompletedDay < 41 ? maxCompletedDay + 1 : 41);
+    }
 
     return res.json({
       success: true,
@@ -142,7 +150,7 @@ router.get('/:username', async (req, res) => {
         registerNumber: student.registerNumber || '',
         department: student.department || '',
         year: student.year || 'Final Year',
-        assignedDay: student.assignedDay,
+        assignedDay: currentAssignedDay,
         profileCompleted: !!student.profileCompleted,
       },
       submissions,
@@ -150,13 +158,13 @@ router.get('/:username', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Error fetching student details.',
+      message: 'Error fetching student details from MongoDB.',
       error: error.message,
     });
   }
 });
 
-// POST /api/students - Add new student (Admin)
+// POST /api/students - Add new student (Admin) directly in MongoDB
 router.post('/', async (req, res) => {
   try {
     const { name, username, password, registerNumber, department, year, assignedDay } = req.body;
@@ -170,12 +178,12 @@ router.post('/', async (req, res) => {
 
     const cleanUsername = String(username).trim().toLowerCase();
 
-    // Check if username already exists
+    // Check if username already exists in MongoDB
     const existing = await User.findOne({ username: cleanUsername });
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: 'A user with this username already exists.',
+        message: 'A user with this username already exists in MongoDB.',
       });
     }
 
@@ -202,13 +210,13 @@ router.post('/', async (req, res) => {
     console.error('Create student error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to create student.',
+      message: 'Failed to create student in MongoDB.',
       error: error.message,
     });
   }
 });
 
-// PUT /api/students/:id - Update student details or assigned day
+// PUT /api/students/:id - Update student details or assigned day in MongoDB
 router.put('/:id', async (req, res) => {
   try {
     const { name, password, registerNumber, department, year, assignedDay } = req.body;
@@ -235,7 +243,7 @@ router.put('/:id', async (req, res) => {
     if (!updatedStudent) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found.',
+        message: 'Student not found in MongoDB.',
       });
     }
 
@@ -247,26 +255,26 @@ router.put('/:id', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Failed to update student.',
+      message: 'Failed to update student in MongoDB.',
       error: error.message,
     });
   }
 });
 
-// DELETE /api/students/:id - Delete or Reset & Regenerate student account
+// DELETE /api/students/:id - Delete or Reset student account directly in MongoDB
 router.delete('/:id', async (req, res) => {
   try {
     const student = await User.findById(req.params.id);
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found.',
+        message: 'Student not found in MongoDB.',
       });
     }
 
     const username = student.username;
 
-    // 1. Delete all submission history for this student
+    // 1. Delete all submission history for this student in MongoDB
     await Submission.deleteMany({ studentUsername: username });
 
     // 2. Check if username is in sequence student1 to student200
@@ -303,7 +311,7 @@ router.delete('/:id', async (req, res) => {
       success: true,
       regenerated,
       message: regenerated
-        ? `Student account "${username}" has been cleared and regenerated as a fresh new account (password: 1234).`
+        ? `Student account "${username}" has been reset and refreshed in MongoDB (password: 1234).`
         : `Student "${username}" deleted successfully from MongoDB.`,
       student: freshStudent,
     });
@@ -311,13 +319,13 @@ router.delete('/:id', async (req, res) => {
     console.error('Delete student error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to delete/reset student.',
+      message: 'Failed to delete/reset student in MongoDB.',
       error: error.message,
     });
   }
 });
 
-// POST /api/students/regenerate-all - Restore / Regenerate any missing student1 to student200 accounts
+// POST /api/students/regenerate-all - Restore / Regenerate any missing student1 to student200 accounts in MongoDB
 router.post('/regenerate-all', async (req, res) => {
   try {
     const expectedStudents = [];
@@ -367,7 +375,7 @@ router.post('/regenerate-all', async (req, res) => {
     console.error('Regenerate all students error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Failed to regenerate student accounts.',
+      message: 'Failed to regenerate student accounts in MongoDB.',
       error: error.message,
     });
   }
