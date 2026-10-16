@@ -85,8 +85,58 @@ setTimeout(() => {
   loadExcelQuestionsFallback();
 }, 0);
 
+// GET /api/questions/refresh-cache - Invalidate and reload cache from Excel and MongoDB
+router.get('/refresh-cache', async (req, res) => {
+  questionsMemoryCache = null;
+  loadExcelQuestionsFallback();
+  try {
+    const dbQuestions = await Question.find({}).sort({ day: 1, questionNumber: 1 });
+    if (dbQuestions && dbQuestions.length > 0) {
+      questionsMemoryCache = dbQuestions.map((q) => ({
+        _id: q._id,
+        id: q._id,
+        Day: q.day,
+        day: q.day,
+        'Question Number': q.questionNumber,
+        questionNumber: q.questionNumber,
+        'Question Type': q.questionType,
+        questionType: q.questionType,
+        Question: q.question,
+        question: q.question,
+        'Option A': q.optionA,
+        optionA: q.optionA,
+        'Option B': q.optionB,
+        optionB: q.optionB,
+        'Option C': q.optionC,
+        optionC: q.optionC,
+        'Option D': q.optionD,
+        optionD: q.optionD,
+        'Correct Answer': q.correctAnswer,
+        correctAnswer: q.correctAnswer,
+        'Coding Requirement': q.codingRequirement,
+        codingRequirement: q.codingRequirement,
+        'Coding Evaluation': q.codingEvaluation,
+        codingEvaluation: q.codingEvaluation,
+        'Sample Input': q.sampleInput,
+        sampleInput: q.sampleInput,
+        'Sample Output': q.expectedOutput,
+        expectedOutput: q.expectedOutput,
+        'Source Date / Assessment': q.sourceAssessment,
+        sourceAssessment: q.sourceAssessment,
+      }));
+    }
+  } catch (e) {}
+
+  return res.json({
+    success: true,
+    message: 'Questions cache successfully invalidated and reloaded.',
+    count: questionsMemoryCache ? questionsMemoryCache.length : 0,
+  });
+});
+
 // GET /api/questions - Get questions (filter by day if provided)
 router.get('/', async (req, res) => {
+
   const { day } = req.query;
   const dayNum = day ? parseInt(day, 10) : null;
 

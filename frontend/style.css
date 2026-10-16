@@ -2762,3 +2762,300 @@ pre.code-block {
 .dept-select-filter:focus {
   border-color: var(--java-orange, #e76f00);
 }
+
+/* =====================================================
+   CODING QUESTIONS TEST CASE & OUTPUT EVALUATION STYLES
+===================================================== */
+.testcase-card {
+  background: #0d1527;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 14px 0 10px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s ease;
+}
+
+.testcase-card.status-pass {
+  border-color: rgba(34, 197, 94, 0.45);
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.15);
+  background: linear-gradient(180deg, #0d1e29 0%, #0b1523 100%);
+}
+
+.testcase-card.status-fail {
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.15);
+  background: linear-gradient(180deg, #201117 0%, #110e17 100%);
+}
+
+.testcase-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.testcase-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.testcase-tag {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.testcase-mark-pill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tc-pill-pending {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
+
+.tc-pill-pass {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.tc-pill-fail {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.testcase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .testcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.testcase-block {
+  background: #080c14;
+  border: 1px solid #1a2538;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.testcase-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.testcase-code {
+  font-family: 'IBM Plex Mono', 'Fira Code', Consolas, monospace;
+  font-size: 13px;
+  color: #f1f5f9;
+  background: transparent;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+}
+
+.testcase-code.code-expected {
+  color: #38bdf8;
+}
+
+.testcase-code.code-actual-match {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.testcase-code.code-actual-mismatch {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.testcase-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+
+.btn-testcase-run {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-testcase-run:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
+}
+
+.btn-testcase-run:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-custom-run {
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-custom-run:hover:not(:disabled) {
+  background: #334155;
+  color: #ffffff;
+}
+
+.testcase-eval-result {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.testcase-eval-result.show-pass {
+  display: block;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+}
+
+.testcase-eval-result.show-fail {
+  display: block;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+.testcase-eval-summary-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.testcase-eval-summary-card.tc-passed {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(180deg, #0f2420 0%, #0d1b1e 100%);
+}
+
+.testcase-eval-summary-card.tc-failed {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: linear-gradient(180deg, #261118 0%, #150f19 100%);
+}
+
+.tc-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tc-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.tc-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tc-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.tc-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: #f8fafc;
+  word-break: break-all;
+  white-space: pre-wrap;
+  display: block;
+}
+
+.tc-code.tc-expected {
+  color: #38bdf8;
+}
+
+.tc-code.tc-actual-match {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.tc-code.tc-actual-mismatch {
+  color: #f87171;
+  font-weight: 600;
+}
+
+.tc-notes-box {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  color: #cbd5e1;
+  font-family: 'IBM Plex Mono', monospace;
+  white-space: pre-wrap;
+}

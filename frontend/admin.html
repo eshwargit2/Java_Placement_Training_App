@@ -178,6 +178,7 @@
   <script src="api.js"></script>
   <script>
     let currentDaysData = [];
+    let currentInspectedDayQuestions = [];
 
     async function loadDashboardData() {
       const user = requireAuth('admin');
@@ -348,6 +349,7 @@
         container.innerHTML = '';
 
         if (res.success && res.questions && res.questions.length > 0) {
+          currentInspectedDayQuestions = res.questions;
           res.questions.forEach((q, idx) => {
             const item = document.createElement('div');
             item.className = 'question-inspect-item';
@@ -380,9 +382,34 @@ public class Main {
               codingDetails = `
                 <div class="coding-details-box">
                   ${q.codingRequirement ? `<p><b>Requirement:</b> ${escapeHTML(q.codingRequirement)}</p>` : ''}
-                  ${q.codingEvaluation ? `<p><b>Full Mark Criteria:</b> ${escapeHTML(q.codingEvaluation)}</p>` : ''}
-                  ${q.sampleInput ? `<p><b>Sample Input:</b> <code>${escapeHTML(q.sampleInput)}</code></p>` : ''}
-                  ${q.expectedOutput ? `<p><b>Expected Output:</b> <code>${escapeHTML(q.expectedOutput)}</code></p>` : ''}
+                  
+                  <div class="testcase-card" id="admin_tc_card_${idx}">
+                    <div class="testcase-header-row">
+                      <div class="testcase-title-group">
+                        <span class="testcase-tag">Test Case</span>
+                        <span style="color:#f8fafc; font-weight:600; font-size:13px;">Auto-Evaluation Rule (Output Match = 1 Mark)</span>
+                      </div>
+                      <span class="testcase-mark-pill tc-pill-pending" id="admin_tc_pill_${idx}">
+                        Output Match = 1 Mark
+                      </span>
+                    </div>
+                    <div class="testcase-grid">
+                      <div class="testcase-block">
+                        <span class="testcase-lbl">Sample Input</span>
+                        <code class="testcase-code">${escapeHTML(q.sampleInput || '(Standard Input)')}</code>
+                      </div>
+                      <div class="testcase-block">
+                        <span class="testcase-lbl">Expected Output</span>
+                        <code class="testcase-code code-expected">${escapeHTML(q.expectedOutput || '-')}</code>
+                      </div>
+                    </div>
+                    <div class="testcase-action-bar">
+                      <button type="button" class="btn-testcase-run" id="admin_btn_tc_${idx}" onclick="runAdminTestCase(${idx})">
+                        🧪 Run Test Case & Check Match
+                      </button>
+                    </div>
+                    <div class="testcase-eval-result" id="admin_tc_result_${idx}"></div>
+                  </div>
 
                   <!-- Live Java Code Runner -->
                   <div class="ide-wrapper" style="margin-top: 12px;">
@@ -394,7 +421,10 @@ public class Main {
                         </div>
                         <span class="ide-lang-badge">Java 17/21</span>
                       </div>
-                      <div class="ide-controls">
+                      <div class="ide-controls" style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-testcase-run" onclick="runAdminTestCase(${idx})">
+                          🧪 Test Case
+                        </button>
                         <button type="button" class="btn-ide-run" id="day_btn_run_${idx}" onclick="runDayProblemCode(${idx})">
                           ▶ Run Code
                         </button>
@@ -418,7 +448,7 @@ public class Main {
                         </div>
                         <div class="ide-status-pill" id="day_status_${idx}">Ready</div>
                       </div>
-                      <div class="ide-console-output" id="day_output_${idx}">Click "▶ Run Code" to test solution.</div>
+                      <div class="ide-console-output" id="day_output_${idx}">Click "▶ Run Code" to test solution or "🧪 Test Case" to check output matching.</div>
                     </div>
                   </div>
                 </div>
@@ -491,6 +521,161 @@ public class Main {
         html += `<div class="term-final-output">${escapeHTML(session.finalOutput)}</div>`;
       }
       return html;
+    }
+
+    function normalizeOutput(val) {
+      if (val === null || val === undefined) return '';
+      return String(val).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+    }
+
+    function compareOutputs(actualRaw, expectedRaw) {
+      const actual = normalizeOutput(actualRaw);
+      const expected = normalizeOutput(expectedRaw);
+
+      if (!expected && !actual) return true;
+      if (actual === expected) return true;
+      if (actual.toLowerCase() === expected.toLowerCase()) return true;
+
+      const actualTokens = actual.split(/\s+/).filter(Boolean);
+      const expectedTokens = expected.split(/\s+/).filter(Boolean);
+
+      if (actualTokens.length === expectedTokens.length && actualTokens.length > 0) {
+        if (actualTokens.every((tok, i) => tok.toLowerCase() === expectedTokens[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      const actualLines = actual.split('\n').map((l) => l.trim()).filter(Boolean);
+      const expectedLines = expected.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (actualLines.length === expectedLines.length && actualLines.length > 0) {
+        if (actualLines.every((l, i) => l.toLowerCase() === expectedLines[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      if (expectedTokens.length > 0 && actualTokens.length >= expectedTokens.length) {
+        const tail = actualTokens.slice(-expectedTokens.length);
+        if (tail.every((tok, i) => tok.toLowerCase() === expectedTokens[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    async function runAdminTestCase(idx) {
+      const q = currentInspectedDayQuestions[idx];
+      if (!q) return;
+
+      const textarea = document.getElementById(`day_code_${idx}`);
+      const btnTc = document.getElementById(`admin_btn_tc_${idx}`);
+      const pillEl = document.getElementById(`admin_tc_pill_${idx}`);
+      const cardEl = document.getElementById(`admin_tc_card_${idx}`);
+      const resultMsg = document.getElementById(`admin_tc_result_${idx}`);
+      const outputEl = document.getElementById(`day_output_${idx}`);
+      const statusPill = document.getElementById(`day_status_${idx}`);
+
+      if (!textarea) return;
+      const code = textarea.value.trim();
+      if (!code) {
+        alert('Please provide Java solution code to test.');
+        return;
+      }
+
+      const sampleInput = q.sampleInput || '';
+      const expectedOutput = q.expectedOutput || '';
+
+      if (btnTc) {
+        btnTc.disabled = true;
+        btnTc.innerHTML = '⏳ Testing...';
+      }
+      if (statusPill) {
+        statusPill.className = 'ide-status-pill ide-status-running';
+        statusPill.textContent = 'Testing Case...';
+      }
+      if (outputEl) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = `<span class="text-muted">Testing solution with Sample Input: "${escapeHTML(sampleInput)}"...</span>`;
+      }
+
+      const startTime = performance.now();
+
+      try {
+        const result = await API.compileCode(code, sampleInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const actualOutput = result.output || '';
+          const isMatch = compareOutputs(actualOutput, expectedOutput);
+
+          if (isMatch) {
+            if (pillEl) {
+              pillEl.className = 'testcase-mark-pill tc-pill-pass';
+              pillEl.innerHTML = '✔ Output Matched (+1 Mark)';
+            }
+            if (cardEl) {
+              cardEl.className = 'testcase-card status-pass';
+            }
+            if (resultMsg) {
+              resultMsg.className = 'testcase-eval-result show-pass';
+              resultMsg.innerHTML = `<b>✔ PASSED:</b> Program produced <code>${escapeHTML(actualOutput.trim())}</code>, matching expected output.`;
+            }
+            if (outputEl) {
+              outputEl.className = 'ide-console-output success-text';
+              outputEl.innerHTML = `=== TEST CASE PASSED (1/1 Mark) ===\nSample Input:    ${sampleInput || '(none)'}\nExpected Output: ${expectedOutput}\nYour Output:     ${actualOutput.trim()}\n\n✔ Status: Code compiled and passed test case in ${elapsed}s!`;
+            }
+            if (statusPill) {
+              statusPill.className = 'ide-status-pill ide-status-success';
+              statusPill.textContent = `✔ Test Passed (${elapsed}s)`;
+            }
+          } else {
+            if (pillEl) {
+              pillEl.className = 'testcase-mark-pill tc-pill-fail';
+              pillEl.innerHTML = '✖ Output Mismatch (0 Mark)';
+            }
+            if (cardEl) {
+              cardEl.className = 'testcase-card status-fail';
+            }
+            if (resultMsg) {
+              resultMsg.className = 'testcase-eval-result show-fail';
+              resultMsg.innerHTML = `<b>✖ MISMATCH:</b> Expected <code>${escapeHTML(expectedOutput)}</code> but got <code>${escapeHTML(actualOutput.trim() || '(No output)')}</code>.`;
+            }
+            if (outputEl) {
+              outputEl.className = 'ide-console-output error-text';
+              outputEl.innerHTML = `=== TEST CASE FAILED ===\nSample Input:    ${sampleInput || '(none)'}\nExpected Output: ${expectedOutput}\nActual Output:   ${actualOutput.trim() || '(No output)'}\n\n✖ Mismatch: Output differs from expected test case.`;
+            }
+            if (statusPill) {
+              statusPill.className = 'ide-status-pill ide-status-error';
+              statusPill.textContent = `✖ Mismatch (${elapsed}s)`;
+            }
+          }
+        } else {
+          const err = (result && result.output) ? result.output : 'Compilation Error';
+          if (pillEl) {
+            pillEl.className = 'testcase-mark-pill tc-pill-fail';
+            pillEl.innerHTML = '✖ Error (0 Mark)';
+          }
+          if (resultMsg) {
+            resultMsg.className = 'testcase-eval-result show-fail';
+            resultMsg.innerHTML = `<b>⚠️ Execution Error:</b> ${escapeHTML(err.substring(0, 150))}`;
+          }
+          if (outputEl) {
+            outputEl.className = 'ide-console-output error-text';
+            outputEl.innerHTML = `=== COMPILATION ERROR ===\n${err}`;
+          }
+          if (statusPill) {
+            statusPill.className = 'ide-status-pill ide-status-error';
+            statusPill.textContent = `✖ Error (${elapsed}s)`;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (btnTc) {
+          btnTc.disabled = false;
+          btnTc.innerHTML = '🧪 Run Test Case & Check Match';
+        }
+      }
     }
 
     async function runDayProblemCode(idx, accumulatedInputs = []) {

@@ -1,0 +1,9 @@
+{
+  "name": "student-placement-assessment-portal-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Student Placement Assessment Portal",
+  "scripts": {
+    "start": "npm start --prefix ../backend",
+    "dev": "npm run dev --prefix ../backend"
+  }
+}

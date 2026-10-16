@@ -444,7 +444,37 @@
             let codeSection = '';
             if (type === 'CODING') {
               const studentCode = item.studentAnswer || '// No code submitted';
+              const isPassed = item.testCasePassed !== undefined ? item.testCasePassed : (item.score >= 1);
               codeSection = `
+                <div class="testcase-eval-summary-card ${isPassed ? 'tc-passed' : 'tc-failed'}">
+                  <div class="tc-summary-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <strong style="color: #f8fafc; font-size: 13px;">🧪 Test Case Evaluation:</strong>
+                      <span class="testcase-mark-pill ${isPassed ? 'tc-pill-pass' : 'tc-pill-fail'}">
+                        ${isPassed ? '✔ PASSED (+1 MARK)' : '✖ FAILED (0 MARKS)'}
+                      </span>
+                    </div>
+                    <span style="font-weight: 700; color: ${isPassed ? '#4ade80' : '#f87171'}; font-size: 13px;">
+                      Awarded: ${item.score || 0} / 1 Mark
+                    </span>
+                  </div>
+                  <div class="tc-breakdown-grid">
+                    <div class="tc-item">
+                      <span class="tc-lbl">Sample Input</span>
+                      <code class="tc-code">${escapeHTML(item.sampleInput || '(Standard Input)')}</code>
+                    </div>
+                    <div class="tc-item">
+                      <span class="tc-lbl">Expected Output</span>
+                      <code class="tc-code tc-expected">${escapeHTML(item.expectedOutput || item.correctAnswer || '-')}</code>
+                    </div>
+                    <div class="tc-item">
+                      <span class="tc-lbl">Actual Output</span>
+                      <code class="tc-code ${isPassed ? 'tc-actual-match' : 'tc-actual-mismatch'}">${escapeHTML(item.actualOutput || (item.evaluationNotes && item.evaluationNotes.includes('Actual:') ? item.evaluationNotes.split('Actual:')[1].trim().replace(/^["']|["']$/g, '') : (isPassed ? (item.expectedOutput || 'Output matched') : 'Output mismatch / No output')))}</code>
+                    </div>
+                  </div>
+                  ${item.evaluationNotes ? `<div class="tc-notes-box">${escapeHTML(item.evaluationNotes)}</div>` : ''}
+                </div>
+
                 <div class="code-review-wrap">
                   <div class="ide-wrapper" style="margin-top: 10px;">
                     <!-- Top Bar -->
@@ -486,7 +516,6 @@
                     </div>
                   </div>
                 </div>
-                ${item.evaluationNotes ? `<div class="eval-notes" style="margin-top:10px;"><b>Evaluation Notes:</b> ${escapeHTML(item.evaluationNotes)}</div>` : ''}
               `;
             } else {
               codeSection = `
@@ -933,7 +962,11 @@
 
           let evalContent = '';
           if (type === 'CODING') {
-            evalContent = `Criteria:\n${item.correctAnswer || 'Algorithmic Java Implementation'}\n\nNotes: ${item.evaluationNotes || 'Evaluated by compiler engine'}`;
+            const isPassed = item.testCasePassed !== undefined ? item.testCasePassed : (item.score >= 1);
+            evalContent = `Test Case: ${isPassed ? 'PASSED (+1 Mark)' : 'FAILED (0 Marks)'}\nInput: ${item.sampleInput || '(Standard)'}\nExpected: ${item.expectedOutput || item.correctAnswer || '-'}\nActual: ${item.actualOutput || (isPassed ? 'Matched' : 'Mismatch')}`;
+            if (item.evaluationNotes) {
+              evalContent += `\n\nNotes:\n${item.evaluationNotes}`;
+            }
           } else {
             evalContent = `Correct Key:\n${item.correctAnswer || '-'}`;
           }
@@ -1107,7 +1140,11 @@
         // Build Key / Feedback string
         let evalContent = '';
         if (type === 'CODING') {
-          evalContent = `Criteria:\n${item.correctAnswer || 'Algorithmic Java Implementation'}\n\nNotes: ${item.evaluationNotes || 'Evaluated by compiler engine'}`;
+          const isPassed = item.testCasePassed !== undefined ? item.testCasePassed : (item.score >= 1);
+          evalContent = `Test Case: ${isPassed ? 'PASSED (+1 Mark)' : 'FAILED (0 Marks)'}\nInput: ${item.sampleInput || '(Standard)'}\nExpected: ${item.expectedOutput || item.correctAnswer || '-'}\nActual: ${item.actualOutput || (isPassed ? 'Matched' : 'Mismatch')}`;
+          if (item.evaluationNotes) {
+            evalContent += `\n\nNotes:\n${item.evaluationNotes}`;
+          }
         } else {
           evalContent = `Correct Key:\n${item.correctAnswer || '-'}`;
         }

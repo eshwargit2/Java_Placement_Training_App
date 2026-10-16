@@ -90,6 +90,7 @@
     let timeRemaining = 40 * 60; // 40 minutes in seconds
     let timerInterval = null;
     let isSubmitting = false;
+    const codingEvaluations = {};
 
     const user = requireAuth('student');
     if (!user) {
@@ -188,10 +189,42 @@ public class Main {
 
               contentHtml = `
                 <div class="coding-problem-box">
-                  ${q.codingRequirement ? `<div class="code-req"><b>📌 Requirement:</b> ${escapeHTML(q.codingRequirement)}</div>` : ''}
-                  ${sampleInputVal ? `<div class="code-io"><b>Sample Input:</b> <code>${escapeHTML(sampleInputVal)}</code></div>` : ''}
-                  ${expectedOutputVal ? `<div class="code-io"><b>Expected Output:</b> <code>${escapeHTML(expectedOutputVal)}</code></div>` : ''}
-                  ${q.codingEvaluation ? `<div class="code-criteria"><b>Evaluation Logic:</b> ${escapeHTML(q.codingEvaluation)}</div>` : ''}
+                  ${q.codingRequirement ? `<div class="code-req"><b>📌 Problem Requirement:</b> ${escapeHTML(q.codingRequirement)}</div>` : ''}
+                  
+                  <!-- TEST CASE EVALUATION CARD -->
+                  <div class="testcase-card" id="tcCard_${idx}">
+                    <div class="testcase-header-row">
+                      <div class="testcase-title-group">
+                        <span class="testcase-tag">Test Case 1</span>
+                        <span style="color:#f8fafc; font-weight:600; font-size:13px;">Auto-Evaluation (Output Match = 1 Mark)</span>
+                      </div>
+                      <span class="testcase-mark-pill tc-pill-pending" id="tcMarkPill_${idx}">
+                        ⏳ Not Evaluated (0/1 Mark)
+                      </span>
+                    </div>
+
+                    <div class="testcase-grid">
+                      <div class="testcase-block">
+                        <span class="testcase-lbl">Input (Standard Input)</span>
+                        <code class="testcase-code" id="tc_in_${idx}">${escapeHTML(sampleInputVal || '(None)')}</code>
+                      </div>
+                      <div class="testcase-block">
+                        <span class="testcase-lbl">Expected Output (Target for 1 Mark)</span>
+                        <code class="testcase-code code-expected" id="tc_out_${idx}">${escapeHTML(expectedOutputVal || '(Executable output)')}</code>
+                      </div>
+                    </div>
+
+                    <div class="testcase-action-bar">
+                      <button type="button" class="btn-testcase-run" id="btnTestCase_${idx}" onclick="runTestCase(${idx})">
+                        🧪 Run Test Case & Evaluate
+                      </button>
+                      <button type="button" class="btn-custom-run" onclick="focusEditor(${idx})" title="Edit your Java code">
+                        ✎ Edit Code
+                      </button>
+                    </div>
+
+                    <div class="testcase-eval-result" id="tcResultMsg_${idx}"></div>
+                  </div>
                   
                   <!-- RICH ONLINE JAVA CODE EDITOR -->
                   <div class="ide-wrapper" id="ide_${idx}">
@@ -232,11 +265,14 @@ public class Main {
                     <!-- Controls / Run Bar -->
                     <div class="ide-controls-bar">
                       <div class="ide-left-controls">
-                        <span>☕ Cloud Java JVM</span>
+                        <span>☕ Cloud Java JVM (JDK 17/21)</span>
                       </div>
-                      <div class="ide-right-controls">
+                      <div class="ide-right-controls" style="display:flex; gap:8px;">
+                        <button type="button" class="btn-testcase-run" id="btnTestCaseBar_${idx}" onclick="runTestCase(${idx})">
+                          🧪 Run Test Case
+                        </button>
                         <button type="button" class="ide-btn-run" id="btnRun_${idx}" onclick="runCode(${idx})">
-                          ▶ Run Code
+                          ▶ Custom Run
                         </button>
                       </div>
                     </div>
@@ -245,14 +281,14 @@ public class Main {
                     <div class="ide-console-section" id="consoleSection_${idx}">
                       <div class="ide-console-header">
                         <div class="ide-console-title">
-                          <span>🖥 Terminal</span>
+                          <span>🖥 Terminal Console</span>
                           <span class="ide-status-pill ide-status-idle" id="statusPill_${idx}">Ready</span>
                         </div>
                         <button type="button" class="ide-btn-tool" style="padding: 2px 8px; font-size: 11px;" onclick="clearConsole(${idx})">
                           Clear
                         </button>
                       </div>
-                      <div class="ide-console-output" id="output_${idx}">Click "▶ Run Code" to compile and execute your Java program.</div>
+                      <div class="ide-console-output" id="output_${idx}">Click "🧪 Run Test Case" to evaluate output against expected test case, or "▶ Custom Run" to test with custom input.</div>
                     </div>
                   </div>
                 </div>
@@ -440,6 +476,205 @@ public class Main {
       return html;
     }
 
+    function normalizeOutput(val) {
+      if (val === null || val === undefined) return '';
+      return String(val).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+    }
+
+    function compareOutputs(actualRaw, expectedRaw) {
+      const actual = normalizeOutput(actualRaw);
+      const expected = normalizeOutput(expectedRaw);
+
+      if (!expected && !actual) return true;
+      if (actual === expected) return true;
+      if (actual.toLowerCase() === expected.toLowerCase()) return true;
+
+      const actualTokens = actual.split(/\s+/).filter(Boolean);
+      const expectedTokens = expected.split(/\s+/).filter(Boolean);
+
+      if (actualTokens.length === expectedTokens.length && actualTokens.length > 0) {
+        if (actualTokens.every((tok, i) => tok.toLowerCase() === expectedTokens[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      const actualLines = actual.split('\n').map((l) => l.trim()).filter(Boolean);
+      const expectedLines = expected.split('\n').map((l) => l.trim()).filter(Boolean);
+      if (actualLines.length === expectedLines.length && actualLines.length > 0) {
+        if (actualLines.every((l, i) => l.toLowerCase() === expectedLines[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      if (expectedTokens.length > 0 && actualTokens.length >= expectedTokens.length) {
+        const tail = actualTokens.slice(-expectedTokens.length);
+        if (tail.every((tok, i) => tok.toLowerCase() === expectedTokens[i].toLowerCase())) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function focusEditor(idx) {
+      const el = document.getElementById(`coding_${idx}`);
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // Run Official Test Case & Auto-Evaluate for 1 Mark
+    async function runTestCase(idx) {
+      const q = questionsData[idx];
+      if (!q) return;
+
+      const textarea = document.getElementById(`coding_${idx}`);
+      const btnTestCase = document.getElementById(`btnTestCase_${idx}`);
+      const btnBar = document.getElementById(`btnTestCaseBar_${idx}`);
+      const pillEl = document.getElementById(`tcMarkPill_${idx}`);
+      const cardEl = document.getElementById(`tcCard_${idx}`);
+      const resultMsg = document.getElementById(`tcResultMsg_${idx}`);
+      const outputEl = document.getElementById(`output_${idx}`);
+      const statusPill = document.getElementById(`statusPill_${idx}`);
+
+      if (!textarea) return;
+      const code = textarea.value.trim();
+      if (!code) {
+        alert('Please write your Java code before running test case evaluation.');
+        return;
+      }
+
+      const sampleInput = q.sampleInput || '';
+      const expectedOutput = q.expectedOutput || '';
+
+      if (btnTestCase) {
+        btnTestCase.disabled = true;
+        btnTestCase.innerHTML = '<span class="ide-spinner"></span> Evaluating Test Case...';
+      }
+      if (btnBar) {
+        btnBar.disabled = true;
+        btnBar.innerHTML = '<span class="ide-spinner"></span> Evaluating...';
+      }
+      if (statusPill) {
+        statusPill.className = 'ide-status-pill ide-status-running';
+        statusPill.innerHTML = '<span class="ide-spinner" style="width:10px;height:10px;border-width:1.5px;"></span> Running Test Case';
+      }
+      if (outputEl) {
+        outputEl.className = 'ide-console-output';
+        outputEl.innerHTML = `<span style="color:#94a3b8;">🧪 Compiling and testing code against Sample Input: "${escapeHTML(sampleInput)}"...</span>`;
+      }
+
+      const startTime = performance.now();
+
+      try {
+        const result = await API.compileCode(code, sampleInput);
+        const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+
+        if (result && result.success) {
+          const actualOutput = result.output || '';
+          const isMatch = compareOutputs(actualOutput, expectedOutput);
+
+          codingEvaluations[idx] = {
+            testCasePassed: isMatch,
+            actualOutput: actualOutput,
+            testedInput: sampleInput,
+          };
+
+          if (isMatch) {
+            if (pillEl) {
+              pillEl.className = 'testcase-mark-pill tc-pill-pass';
+              pillEl.innerHTML = '✔ Output Matched (+1 Mark)';
+            }
+            if (cardEl) {
+              cardEl.className = 'testcase-card status-pass';
+            }
+            if (resultMsg) {
+              resultMsg.className = 'testcase-eval-result show-pass';
+              resultMsg.innerHTML = `
+                <b>🎉 Test Case Passed (+1 Mark Awarded)!</b><br>
+                Your program output: <code>${escapeHTML(actualOutput.trim())}</code><br>
+                Matches expected test case. 1 full mark will be scored upon submission.
+              `;
+            }
+            if (outputEl) {
+              outputEl.className = 'ide-console-output success-text';
+              outputEl.innerHTML = `=== TEST CASE EVALUATION: PASSED (1/1 Mark) ===\nSample Input:    ${sampleInput || '(none)'}\nExpected Output: ${expectedOutput}\nYour Output:     ${actualOutput.trim()}\n\n✔ Output matched perfectly in ${elapsed}s! +1 Mark guaranteed.`;
+            }
+            if (statusPill) {
+              statusPill.className = 'ide-status-pill ide-status-success';
+              statusPill.textContent = `✔ Test Case Passed (${elapsed}s)`;
+            }
+          } else {
+            if (pillEl) {
+              pillEl.className = 'testcase-mark-pill tc-pill-fail';
+              pillEl.innerHTML = '✖ Output Mismatch (0 Mark)';
+            }
+            if (cardEl) {
+              cardEl.className = 'testcase-card status-fail';
+            }
+            if (resultMsg) {
+              resultMsg.className = 'testcase-eval-result show-fail';
+              resultMsg.innerHTML = `
+                <b>❌ Test Case Failed (0 Mark):</b> Output does not match.<br>
+                <b>Expected:</b> <code>${escapeHTML(expectedOutput)}</code><br>
+                <b>Your Output:</b> <code>${escapeHTML(actualOutput.trim() || '(No output)')}</code><br>
+                <small style="color:#fca5a5;">Tip: Adjust your output format or logic to match the expected output and earn 1 mark.</small>
+              `;
+            }
+            if (outputEl) {
+              outputEl.className = 'ide-console-output error-text';
+              outputEl.innerHTML = `=== TEST CASE EVALUATION: FAILED (0/1 Mark) ===\nSample Input:    ${sampleInput || '(none)'}\nExpected Output: ${expectedOutput}\nYour Output:     ${actualOutput.trim() || '(No output)'}\n\n✖ Mismatch: Update your code so output matches expected test case.`;
+            }
+            if (statusPill) {
+              statusPill.className = 'ide-status-pill ide-status-error';
+              statusPill.textContent = `✖ Output Mismatch (${elapsed}s)`;
+            }
+          }
+        } else {
+          const errOut = (result && result.output) ? result.output : 'Compilation Error';
+          codingEvaluations[idx] = {
+            testCasePassed: false,
+            actualOutput: errOut,
+            testedInput: sampleInput,
+          };
+          if (pillEl) {
+            pillEl.className = 'testcase-mark-pill tc-pill-fail';
+            pillEl.innerHTML = '✖ Compiler Error (0 Mark)';
+          }
+          if (cardEl) {
+            cardEl.className = 'testcase-card status-fail';
+          }
+          if (resultMsg) {
+            resultMsg.className = 'testcase-eval-result show-fail';
+            resultMsg.innerHTML = `<b>⚠️ Compilation Error (0 Mark):</b><br><pre style="margin-top:5px;font-size:11px;white-space:pre-wrap;">${escapeHTML(errOut.substring(0, 250))}</pre>`;
+          }
+          if (outputEl) {
+            outputEl.className = 'ide-console-output error-text';
+            outputEl.innerHTML = `=== COMPILATION / RUNTIME ERROR ===\n${errOut}`;
+          }
+          if (statusPill) {
+            statusPill.className = 'ide-status-pill ide-status-error';
+            statusPill.textContent = `✖ Error (${elapsed}s)`;
+          }
+        }
+      } catch (err) {
+        console.error('Test case execution error:', err);
+        if (outputEl) {
+          outputEl.innerHTML = `<span class="error-text">Execution failed: ${escapeHTML(err.message || 'Network error')}</span>`;
+        }
+      } finally {
+        if (btnTestCase) {
+          btnTestCase.disabled = false;
+          btnTestCase.innerHTML = '🧪 Run Test Case & Evaluate';
+        }
+        if (btnBar) {
+          btnBar.disabled = false;
+          btnBar.innerHTML = '🧪 Run Test Case';
+        }
+      }
+    }
+
     // Run Code & Live Compilation with Same-Line Interactive Input
     async function runCode(idx, accumulatedInputs = []) {
       const textarea = document.getElementById(`coding_${idx}`);
@@ -526,7 +761,7 @@ public class Main {
       } finally {
         if (btnRun) {
           btnRun.disabled = false;
-          btnRun.innerHTML = '▶ Run Code';
+          btnRun.innerHTML = '▶ Custom Run';
         }
       }
     }
@@ -534,7 +769,7 @@ public class Main {
     async function submitAssessment() {
       if (isSubmitting) return;
 
-      const confirmSub = confirm('Are you sure you want to submit your assessment?');
+      const confirmSub = confirm('Are you sure you want to submit your assessment?\n\nTip: For coding questions, matching the test case output awards 1 full mark.');
       if (!confirmSub) return;
 
       isSubmitting = true;
@@ -545,7 +780,7 @@ public class Main {
       if (headerBtn) headerBtn.disabled = true;
       if (bottomBtn) {
         bottomBtn.disabled = true;
-        bottomBtn.innerText = 'Evaluating & Saving to MongoDB...';
+        bottomBtn.innerText = 'Evaluating Test Cases & Saving to MongoDB...';
       }
 
       // Collect answers
@@ -572,6 +807,9 @@ public class Main {
           studentAnswer: studentAnswer,
           correctAnswer: q.correctAnswer,
           requirement: q.codingRequirement,
+          sampleInput: q.sampleInput || '',
+          expectedOutput: q.expectedOutput || '',
+          clientTestCase: codingEvaluations[idx] || null,
         };
       });
 

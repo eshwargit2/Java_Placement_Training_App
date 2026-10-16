@@ -47,6 +47,22 @@ const AnswerSheetItemSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    sampleInput: {
+      type: String,
+      default: '',
+    },
+    expectedOutput: {
+      type: String,
+      default: '',
+    },
+    actualOutput: {
+      type: String,
+      default: '',
+    },
+    testCasePassed: {
+      type: Boolean,
+      default: false,
+    },
   },
   { _id: false }
 );

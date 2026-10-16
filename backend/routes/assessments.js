@@ -35,22 +35,27 @@ router.post('/submit', async (req, res) => {
 
     // Map answers by question or index
     const studentAnswerMap = {};
+    const clientTestCaseMap = {};
     if (Array.isArray(answers)) {
       answers.forEach((ans, idx) => {
+        const ansVal = ans.studentAnswer !== undefined ? ans.studentAnswer : (ans.answer || '');
+        const tcVal = ans.clientTestCase || null;
         if (ans.questionId) {
-          studentAnswerMap[String(ans.questionId)] = ans.studentAnswer;
+          studentAnswerMap[String(ans.questionId)] = ansVal;
+          if (tcVal) clientTestCaseMap[String(ans.questionId)] = tcVal;
         }
         if (ans.question) {
-          studentAnswerMap[String(ans.question).trim().toLowerCase()] = ans.studentAnswer;
+          studentAnswerMap[String(ans.question).trim().toLowerCase()] = ansVal;
+          if (tcVal) clientTestCaseMap[String(ans.question).trim().toLowerCase()] = tcVal;
         }
-        studentAnswerMap[`idx_${idx}`] = ans.studentAnswer;
+        studentAnswerMap[`idx_${idx}`] = ansVal;
+        if (tcVal) clientTestCaseMap[`idx_${idx}`] = tcVal;
       });
     }
 
     if (officialQuestions.length > 0) {
-      // Evaluate against official questions from MongoDB
-      for (let i = 0; i < officialQuestions.length; i++) {
-        const q = officialQuestions[i];
+      // Evaluate against official questions from MongoDB concurrently
+      const evaluationPromises = officialQuestions.map(async (q, i) => {
         const type = String(q.questionType || 'MCQ').trim().toUpperCase();
 
         let rawAnswer =
@@ -59,94 +64,147 @@ router.post('/submit', async (req, res) => {
           studentAnswerMap[`idx_${i}`] ||
           'Not Answered';
 
-        total += 1;
+        const clientTc =
+          clientTestCaseMap[String(q._id)] ||
+          clientTestCaseMap[String(q.question).trim().toLowerCase()] ||
+          clientTestCaseMap[`idx_${i}`] ||
+          null;
 
         if (type === 'MCQ' || type === 'ERROR' || type === 'ERROR CORRECTION') {
           const evalRes = evaluateMCQ(rawAnswer, q.correctAnswer);
-          score += evalRes.score;
-          answerSheet.push({
-            question: q.question,
-            questionType: type,
-            optionA: q.optionA || '',
-            optionB: q.optionB || '',
-            optionC: q.optionC || '',
-            optionD: q.optionD || '',
-            studentAnswer: rawAnswer,
-            correctAnswer: q.correctAnswer,
-            score: evalRes.score,
-            status: evalRes.status,
-            evaluationNotes: evalRes.status === 'Correct' ? 'Answer matched' : 'Incorrect answer',
-          });
+          return {
+            itemScore: evalRes.score,
+            sheetItem: {
+              question: q.question,
+              questionType: type,
+              optionA: q.optionA || '',
+              optionB: q.optionB || '',
+              optionC: q.optionC || '',
+              optionD: q.optionD || '',
+              studentAnswer: rawAnswer,
+              correctAnswer: q.correctAnswer,
+              score: evalRes.score,
+              status: evalRes.status,
+              sampleInput: '',
+              expectedOutput: '',
+              actualOutput: '',
+              testCasePassed: evalRes.score > 0,
+              evaluationNotes: evalRes.status === 'Correct' ? 'Answer matched' : 'Incorrect answer',
+            },
+          };
         } else if (type === 'CODING') {
-          const evalRes = evaluateJavaCode(rawAnswer, q);
-          score += evalRes.score;
-          answerSheet.push({
-            question: q.question,
-            questionType: 'CODING',
-            optionA: '',
-            optionB: '',
-            optionC: '',
-            optionD: '',
-            studentAnswer: rawAnswer,
-            correctAnswer: q.codingEvaluation || q.codingRequirement || 'Algorithmic Java Implementation',
-            score: evalRes.score,
-            status: evalRes.status,
-            evaluationNotes: evalRes.notes,
-          });
+          const evalRes = await evaluateJavaCode(rawAnswer, q, clientTc);
+          return {
+            itemScore: evalRes.score,
+            sheetItem: {
+              question: q.question,
+              questionType: 'CODING',
+              optionA: '',
+              optionB: '',
+              optionC: '',
+              optionD: '',
+              studentAnswer: rawAnswer,
+              correctAnswer: q.expectedOutput || q.codingEvaluation || q.codingRequirement || 'Algorithmic Java Implementation',
+              score: evalRes.score,
+              status: evalRes.status,
+              sampleInput: q.sampleInput || '',
+              expectedOutput: q.expectedOutput || '',
+              actualOutput: evalRes.actualOutput || '',
+              testCasePassed: evalRes.testCasePassed || false,
+              evaluationNotes: evalRes.notes,
+            },
+          };
         } else {
           const evalRes = evaluateMCQ(rawAnswer, q.correctAnswer);
-          score += evalRes.score;
-          answerSheet.push({
-            question: q.question,
-            questionType: type,
-            optionA: q.optionA || '',
-            optionB: q.optionB || '',
-            optionC: q.optionC || '',
-            optionD: q.optionD || '',
-            studentAnswer: rawAnswer,
-            correctAnswer: q.correctAnswer,
-            score: evalRes.score,
-            status: evalRes.status,
-            evaluationNotes: '',
-          });
+          return {
+            itemScore: evalRes.score,
+            sheetItem: {
+              question: q.question,
+              questionType: type,
+              optionA: q.optionA || '',
+              optionB: q.optionB || '',
+              optionC: q.optionC || '',
+              optionD: q.optionD || '',
+              studentAnswer: rawAnswer,
+              correctAnswer: q.correctAnswer,
+              score: evalRes.score,
+              status: evalRes.status,
+              sampleInput: '',
+              expectedOutput: '',
+              actualOutput: '',
+              testCasePassed: evalRes.score > 0,
+              evaluationNotes: '',
+            },
+          };
         }
-      }
+      });
+
+      const evaluatedResults = await Promise.all(evaluationPromises);
+      total = evaluatedResults.length;
+      evaluatedResults.forEach((res) => {
+        score += res.itemScore;
+        answerSheet.push(res.sheetItem);
+      });
     } else if (Array.isArray(answers) && answers.length > 0) {
-      for (let i = 0; i < answers.length; i++) {
-        const ans = answers[i];
+      const evaluationPromises = answers.map(async (ans, i) => {
         const type = String(ans.questionType || ans.type || 'MCQ').trim().toUpperCase();
         const rawAnswer = ans.studentAnswer || ans.answer || 'Not Answered';
-        total += 1;
+        const clientTc = ans.clientTestCase || null;
 
         if (type === 'CODING') {
-          const evalRes = evaluateJavaCode(rawAnswer, {
-            question: ans.question,
-            codingRequirement: ans.requirement,
-          });
-          score += evalRes.score;
-          answerSheet.push({
-            question: ans.question || `Question ${i + 1}`,
-            questionType: 'CODING',
-            studentAnswer: rawAnswer,
-            correctAnswer: ans.correctAnswer || 'Java Implementation',
-            score: evalRes.score,
-            status: evalRes.status,
-            evaluationNotes: evalRes.notes,
-          });
+          const evalRes = await evaluateJavaCode(
+            rawAnswer,
+            {
+              question: ans.question,
+              codingRequirement: ans.requirement,
+              sampleInput: ans.sampleInput || '',
+              expectedOutput: ans.expectedOutput || ans.correctAnswer || '',
+            },
+            clientTc
+          );
+          return {
+            itemScore: evalRes.score,
+            sheetItem: {
+              question: ans.question || `Question ${i + 1}`,
+              questionType: 'CODING',
+              studentAnswer: rawAnswer,
+              correctAnswer: ans.expectedOutput || ans.correctAnswer || 'Java Implementation',
+              score: evalRes.score,
+              status: evalRes.status,
+              sampleInput: ans.sampleInput || '',
+              expectedOutput: ans.expectedOutput || '',
+              actualOutput: evalRes.actualOutput || '',
+              testCasePassed: evalRes.testCasePassed || false,
+              evaluationNotes: evalRes.notes,
+            },
+          };
         } else {
           const evalRes = evaluateMCQ(rawAnswer, ans.correctAnswer);
-          score += evalRes.score;
-          answerSheet.push({
-            question: ans.question || `Question ${i + 1}`,
-            questionType: type,
-            studentAnswer: rawAnswer,
-            correctAnswer: ans.correctAnswer || '',
-            score: evalRes.score,
-            status: evalRes.status,
-            evaluationNotes: '',
-          });
+          return {
+            itemScore: evalRes.score,
+            sheetItem: {
+              question: ans.question || `Question ${i + 1}`,
+              questionType: type,
+              studentAnswer: rawAnswer,
+              correctAnswer: ans.correctAnswer || '',
+              score: evalRes.score,
+              status: evalRes.status,
+              sampleInput: '',
+              expectedOutput: '',
+              actualOutput: '',
+              testCasePassed: evalRes.score > 0,
+              evaluationNotes: '',
+            },
+          };
         }
-      }
+      });
+
+      const evaluatedResults = await Promise.all(evaluationPromises);
+      total = evaluatedResults.length;
+      evaluatedResults.forEach((res) => {
+        score += res.itemScore;
+        answerSheet.push(res.sheetItem);
+      });
     }
 
     const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
@@ -261,6 +319,9 @@ router.get('/:id', async (req, res) => {
           optionB: item.optionB || (match ? match.optionB : ''),
           optionC: item.optionC || (match ? match.optionC : ''),
           optionD: item.optionD || (match ? match.optionD : ''),
+          sampleInput: item.sampleInput || (match ? match.sampleInput : ''),
+          expectedOutput: item.expectedOutput || (match ? match.expectedOutput : ''),
+          testCasePassed: item.testCasePassed !== undefined ? item.testCasePassed : (item.score >= 1),
         };
       });
     }

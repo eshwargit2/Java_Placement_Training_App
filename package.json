@@ -1,0 +1,9 @@
+{
+  "name": "student-placement-assessment-portal",
+  "version": "1.0.0",
+  "description": "Student Placement Assessment Portal - Java Curriculum & Compiler Evaluation Platform",
+  "scripts": {
+    "start": "npm start --prefix backend",
+    "dev": "npm start --prefix backend"
+  }
+}
